@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title><%= title %></title>
+
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+
+    <link rel="stylesheet" href="/jui/dist/ui.min.css"/>
+    <link rel="stylesheet" href="/jui/dist/ui-jennifer.min.css"/>
+    <link rel="stylesheet" href="/jui-grid/dist/grid.min.css"/>
+    <link rel="stylesheet" href="/jui-grid/dist/grid-jennifer.min.css"/>
+
+    <script src="//code.jquery.com/jquery.min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+
+    <script src="/jui-core/dist/core.min.js"></script>
+    <script src="/jui/dist/ui.min.js"></script>
+    <script src="/jui-grid/dist/grid.min.js"></script>
+    <script src="/jui-core/dist/core.min.js"></script>
+    <script src="/jui-chart/dist/chart.min.js"></script>
+
+    <!-- it's mine -->
+    <script src="/js/controller.js"></script>
+</head>
+<body class="jui">
+<header class="navbar fixed top" style="background: #2B3340; height: 75px;">
+    <div class="center" style="position: relative;">
+        <span>
+            <a style="cursor: pointer;" onclick="location.href='/'">
+                <i class="icon icon-analysis" style="font-size: 50px; color: white; margin-top: 7px;">
+                    JavaByteCode Analysis
+                </i>
+            </a>
+        </span>
+    </div>
+</header>
+
+<br><br>
+<div class="main">
+    <form id="frmUpload" method="post" enctype="multipart/form-data">
+        <input type="file" style="cursor: pointer;" name="uploadFile" multiple/>
+        <input type="button" id="uploadButton" class="btn focus" value="클릭"/>
+    </form>
+</div>
+</body>
+</html>

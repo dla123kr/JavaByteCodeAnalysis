@@ -1,0 +1,15 @@
+a {
+    color: #00B7FF;
+}
+
+.center {
+    position: relative;
+    width: 600px;
+    margin: 0 auto !important
+}
+
+.main {
+    position: relative;
+    width: 400px;
+    margin: 70px auto !important;
+}
