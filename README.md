@@ -24,5 +24,4 @@ Spring Framework로 구현한 RESTful API입니다.
 
 ***
 
-* 현재는 패키지이름과 클래스이름만 보여줍니다.  
 * 아직 중복처리 및 Clear 기능을 만들지 못하여 한번 Load한 후에 다음 Load를 위해선 **JavaByteCodeAnalysis**를 다시 실행하여 주십시오.

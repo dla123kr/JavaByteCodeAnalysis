@@ -25,8 +25,8 @@
 </head>
 <body class="jui">
 
-    <header class="navbar fixed top" style="background: #2B3340; height: 75px;">
-        <div class="center" style="position: relative;">
+<header class="navbar fixed top" style="background: #2B3340; height: 75px;">
+    <div class="center" style="position: relative;">
                 <span>
                     <a style="cursor: pointer;" onclick="location.href='/'">
                         <i class="icon icon-analysis" style="font-size: 50px; color: white; margin-top: 7px;">
@@ -34,34 +34,38 @@
                         </i>
                     </a>
                 </span>
-        </div>
-    </header>
+    </div>
+</header>
 
-    <section class="horizontal-main">
-        <p class="vertical-main">
-            <div class="h2" style="margin-bottom:10px;">분석할 파일을 선택하세요. <small>*.class, *.jar</small></div>
-            <form id="frmUpload" method="post" enctype="multipart/form-data">
-                <input type="file" style="cursor: pointer;" name="uploadFile" multiple accept=".class, .jar"/>
-                <input type="button" id="uploadButton" class="btn focus" value="Load"/>
-                <input type="button" id="clearButton" class="btn" value="Clear" onclick="location.href='/'"/>
-            </form>
-        </p>
-        <hr />
-        <p>
-            <table id="details-table" class="table expand" style="visibility: collapse;">
-                <thead>
-                    <tr>
-                        <th style="width: 30px;"></th>
-                        <th style="text-align: center;">Class Name</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </p>
-    </section>
+<section class="horizontal-main">
+    <p class="vertical-main">
+    <div class="h2" style="margin-bottom:10px;">분석할 파일을 선택하세요.
+        <small>*.class, *.jar</small>
+    </div>
+    <form id="frmUpload" method="post" enctype="multipart/form-data">
+        <input type="file" style="cursor: pointer;" name="uploadFile" multiple accept=".class, .jar"/>
+        <input type="button" id="uploadButton" class="btn focus" value="Load"/>
+        <input type="button" id="clearButton" class="btn" value="Clear" onclick="location.href='/'"/>
+    </form>
+    </p>
+    <hr/>
+    <p>
+    <table id="details-table" class="table expand" style="visibility: collapse;">
+        <thead>
+        <tr>
+            <th style="width: 30px;"></th>
+            <th style="text-align: center;">Class Name</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    </p>
+</section>
 
 </body>
 </html>
+
+<!--**********************************************************************************************************************-->
 
 <!-- details-table의 template -->
 <script data-jui="#details-table" data-tpl="row" type="text/template">
@@ -83,5 +87,136 @@
             </span>
         </div>
     </div>
+    <div class="row" style="margin-top: 10px;">
+        <table class="table classic">
+            <thead>
+            <tr>
+                <th style="width: 100px; text-align: center;">Type</th>
+                <th style="text-align: center;">Information</th>
+            </tr>
+            </thead>
+            <tbody>
 
+            <! if(superClassName != 'java.lang.Object' || interfaceNames.length > 0) { !>
+            <tr>
+                <td style="font-weight: bold">Class</td>
+                <td>
+
+                    <div>
+                        <table class="table simple hover" style="width: 100%;">
+                            <tbody>
+                            <! if(superClassName != 'java.lang.Object') { !>
+                            <tr>
+                                <td style="width: 100px;">SuperClass</td>
+                                <td><!= superClassName !></td>
+                            </tr>
+                            <! } !>
+
+                            <! if(interfaceNames.length > 0) { !>
+                            <tr>
+                                <td style="width: 100px;" rowspan="<!= interfaceNames.length !>">Interfaces</td>
+                                <td><!= interfaceNames[0] !></td>
+                            </tr>
+                            <! for(var i = 1; i < interfaceNames.length; i++) { !>
+                            <tr><td><!= interfaceNames[i] !></td></tr>
+                            <! } !>
+                            <! } !>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </td>
+            </tr>
+            <! } !>
+
+            <! if(jbcfields.length > 0) { !>
+            <tr>
+                <td style="font-weight: bold">Fields</td>
+                <td>
+
+                    <div>
+                        <table class="table simple hover" style="width: 100%;">
+                            <tbody>
+                            <! for(var i = 0; i < jbcfields.length; i++) { !>
+                            <tr>
+                                <td rowspan="2"><!= jbcfields[i].fieldName !></td>
+                                <td>Access Modifier</td>
+                                <td><!= jbcfields[i].accessModifier !></td>
+                            </tr>
+                            <tr>
+                                <td>Return Type</td>
+                                <td><!= jbcfields[i].returnType !></td>
+                            </tr>
+                            <! } !>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </td>
+            </tr>
+            <! } !>
+
+            <! if(jbcmethods.length > 0) { !>
+            <tr>
+                <td style="font-weight: bold">Methods</td>
+                <td>
+
+                    <div>
+                        <table class="table simple hover" style="width: 100%;">
+                            <tbody>
+                            <! for(var i = 0; i < jbcmethods.length; i++) { !>
+
+                            <tr>
+                                <! var methodRowCount = 3 + jbcmethods[i].parameters.length + jbcmethods[i].calledMethods.length; !>
+                                <td rowspan="<!= methodRowCount !>"><!= jbcmethods[i].methodName !></td>
+                                <td>Access Modifier</td>
+                                <td><!= jbcmethods[i].accessModifier !></td>
+                            </tr>
+
+                            <tr>
+                                <td>Return Type</td>
+                                <td>
+                                    <! if(jbcmethods[i].returnType != null) { !>
+                                    <!= jbcmethods[i].returnType !>
+                                    <! } !>
+                                </td>
+                            </tr>
+
+                            <! if(jbcmethods[i].parameters.length > 0) { !>
+                            <tr>
+                                <td rowspan="<!= jbcmethods[i].parameters.length !>">Parameters</td>
+                                <td><!= jbcmethods[i].parameters[0] !></td>
+                            </tr>
+                            <! for(var j = 1; j < jbcmethods[i].parameters.length; j++) { !>
+                            <tr><td><!= jbcmethods[i].parameters[j] !></td></tr>
+                            <! } !>
+                            <! } !>
+
+                            <tr>
+                                <td>Called Count</td>
+                                <td><!= jbcmethods[i].calledCount !></td>
+                            </tr>
+
+                            <! if(jbcmethods[i].calledMethods.length > 0) { !>
+                            <tr>
+                                <td rowspan="<!= jbcmethods[i].calledMethods.length !>">Called Methods</td>
+                                <td><!= jbcmethods[i].calledMethods[0] !></td>
+                            </tr>
+                            <! for(var j = 1; j < jbcmethods[i].calledMethods.length; j++) { !>
+                            <tr><td><!= jbcmethods[i].calledMethods[j] !></td></tr>
+                            <! } !>
+                            <! } !>
+
+                            <! } !>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </td>
+            </tr>
+            <! } !>
+
+            </tbody>
+        </table>
+    </div>
 </script>
