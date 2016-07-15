@@ -3,6 +3,8 @@ package function;
 import javassist.*;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
+import model.JBCClass;
+import model.JBCMethod;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.StringTokenizer;
  * Created by LimSJ on 2016-07-08.
  */
 public class HandleJBC {
+
+    private static ArrayList<String> tmpCalledMethods = new ArrayList<>();
 
     /**
      * 입력받은 flag를 통해 접근제어자를 반환
@@ -46,17 +50,18 @@ public class HandleJBC {
      */
     private static String getReturnType(String desc, boolean isMethod){
         String type = "";
-        boolean isArr = false;
+        int arrDimension = 0;
 
         int index = 0;
         if(isMethod){
             index = desc.indexOf(")") + 1;
         }
 
-        if(desc.charAt(index) == '['){
+        while(desc.charAt(index) == '['){
             index++;
-            isArr = true;
+            arrDimension++;
         }
+
         if(desc.charAt(index) == 'L'){
             type = desc.substring(index + 1).replace("/", ".");
         } else {
@@ -93,7 +98,7 @@ public class HandleJBC {
 
         if(type.charAt(type.length() - 1) == ';')
             type = type.substring(0, type.length() - 1);
-        if(isArr)
+        if(arrDimension-- > 0)
             type += "[]";
 
         return type;
@@ -130,7 +135,7 @@ public class HandleJBC {
         int end = desc.indexOf(")");
 
         if(start < end){
-            String str = desc.substring(start, end-1);
+            String str = desc.substring(start, end);
             tokens = new StringTokenizer(str, ";");
         }
         if(tokens == null || !tokens.hasMoreElements())
@@ -149,15 +154,6 @@ public class HandleJBC {
         return params;
     }
 
-    public static ArrayList<String> getMethodParameters(CtClass[] ctClasses){
-        ArrayList<String> params = new ArrayList<>();
-
-        for(CtClass ctClass : ctClasses){
-            params.add(ctClass.getName().toString());
-        }
-        return params;
-    }
-
     /**
      * 한 토큰 내에 여러개의 파라미터가 존재할 수 있으니 잘라냄
      * @param token Descriptor의 조각
@@ -171,15 +167,15 @@ public class HandleJBC {
 
         while(start < end){
             String type = "";
-            int length = 1;
+            int arrDimension = 0;
 
-            if(token.charAt(start) == '[')
-                length++;
+            while(token.charAt(start + arrDimension) == '[')
+                arrDimension++;
 
-            char t = token.charAt(start + length - 1);
+            char t = token.charAt(start + arrDimension);
             if(t != 'L'){ // 클래스가 아닌 경우
-                tokens.add(token.substring(start, start + length));
-                start += length;
+                tokens.add(token.substring(start, start + arrDimension + 1));
+                start += arrDimension + 1;
             } else{ // 클래스인 경우
                 tokens.add(token.substring(start, end));
                 break;
@@ -196,17 +192,9 @@ public class HandleJBC {
                     new ExprEditor(){
                         @Override
                         public void edit(MethodCall m){
-                            // TODO: 2016-07-11 calledCount 어떻게 조작하지?
-                            // jar랑 package이름 알아내가지고 calledCount 세자!
-                            String methodName = m.getClassName() + "." + m.getMethodName();
+                            String methodName = m.getClassName() + "." + m.getMethodName(); // .으로 쪼개면 패키지정보도 나온다
                             methods.add(methodName);
-
-                            
-
-                            //System.err.println(m.getMethod().getDeclaringClass().getPackageName()); // 패키지네임
-                            //
-                            //System.err.println(m.getClass().getProtectionDomain().getCodeSource().getLocation()); // javassist.jar로 나옴
-                            //System.err.println(ct.getClass().getProtectionDomain().getCodeSource().getLocation()); // javassist.jar
+                            tmpCalledMethods.add(methodName);
                         }
                     }
             );
@@ -220,5 +208,39 @@ public class HandleJBC {
         ArrayList<String> notDuplicationMethods = new ArrayList<>(hs);
 
         return notDuplicationMethods;
+    }
+
+    public static void countingMethodCall(ArrayList<JBCClass> jbcClasses){
+        for(String str : tmpCalledMethods){
+            String[] splitted = str.split("\\.");
+            String methodName = splitted[splitted.length - 1];
+            String key = str.replace("." + methodName, "");
+
+            /**
+             * 해당 value가 unloaded일수도 있고 loaded일수도 있다.
+             */
+            if(StaticDatas.getJBCClassHashtable().containsKey(key)){
+                JBCClass value = StaticDatas.getJBCClassHashtable().get(key);
+                for(JBCMethod jm : value.getJBCMethods()){
+                    if(jm.getMethodName().equals(methodName)){
+                        jm.setCalledCount(jm.getCalledCount() + 1);
+                        break;
+                    }
+                }
+            } else{
+                splitted = key.split("\\.");
+                String className = splitted[splitted.length - 1];
+                String packName = key.replace("." + className, "");
+
+                JBCClass newJBCClass = new JBCClass(packName, className);
+                newJBCClass.setLoaded(false);
+
+                JBCMethod newJBCMethod = new JBCMethod(className, methodName);
+                newJBCMethod.setCalledCount(1);
+            }
+        }
+
+        // call된 함수 다 처리했으니 tmp 비워주기
+        tmpCalledMethods.clear();
     }
 }

@@ -1,15 +1,18 @@
 package controller;
 
 import function.HandleJBC;
+import function.StaticDatas;
 import javassist.*;
 import javassist.bytecode.*;
 import model.JBCClass;
 import model.JBCField;
 import model.JBCMethod;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.annotation.MultipartConfig;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -38,6 +41,7 @@ public class FileUploadController {
 
         log.info("/////////////////////////////////////////////");
         for(MultipartFile file : files){
+
             try {
                 bufferedInputStream = new BufferedInputStream(file.getInputStream());
             } catch (IOException e) {
@@ -66,7 +70,6 @@ public class FileUploadController {
                 if(classFile != null){
                     jbcClass = setJBCClass(classFile);
                     classes.add(jbcClass);
-                    log.info(jbcClass.getClassName());
                 }
             } else if(ext.equals("jar")){
                 ZipInputStream zipInputStream = new ZipInputStream(bufferedInputStream);
@@ -75,11 +78,9 @@ public class FileUploadController {
                     for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry()) {
                         if (!entry.isDirectory() && entry.getName().toLowerCase().endsWith(".class")) {
                             String className = entry.getName().replace('/', '.');
-                            System.out.println(className);
                             classFile = new ClassFile(new DataInputStream(zipInputStream));
                             jbcClass = setJBCClass(classFile);
                             classes.add(jbcClass);
-                            log.info(jbcClass.getClassName());
                         }
                     }
                 } catch (IOException e) {
@@ -89,6 +90,8 @@ public class FileUploadController {
                 }
             }
         }
+
+        HandleJBC.countingMethodCall(classes);
 
         return classes;
     }
@@ -127,7 +130,7 @@ public class FileUploadController {
         CtConstructor[] ctConstructors = ctClass.getDeclaredConstructors();
         CtMethod[] ctMethods = ctClass.getDeclaredMethods();
 
-        JBCClass jbcClass = new JBCClass(classFile.getName(), ctClass.getPackageName());
+        JBCClass jbcClass = new JBCClass(ctClass.getPackageName(), ctClass.getSimpleName());
         jbcClass.setLoaded(true);
         jbcClass.setSuperClassName(classFile.getSuperclass());
         Collections.addAll(jbcClass.getInterfaceNames(), classFile.getInterfaces());
@@ -183,6 +186,22 @@ public class FileUploadController {
 
             jbcClass.getJBCMethods().add(jbcMethod);
         }
+
+        // TODO: 2016-07-13 총 관리하는 곳에 넣어야함
+        String key = jbcClass.getClassLongName();
+        if(!StaticDatas.getJBCClassHashtable().containsKey(key))
+            StaticDatas.getJBCClassHashtable().put(key, jbcClass);
+        else {
+            // 이미 부른애를 또 부르는 경우
+            // Loaded 상태면 업데이트 된 class라는 거니 새로 put
+            // Unloaded 상태면 Value 보존하고, calledCount같은 필요한 정보 빼내서 갱신하자.
+
+            // 아니.. 근데 ........... 업데이트 된 class면 어쩌려고 ?
+            // TODO: 2016-07-13 이미 있는 class일 때 어떻게 처리할 지 더 생각해보자.
+            log.info("=======================");
+            log.info("이미 있는 class: " + key);
+        }
+
 
         return jbcClass;
     }

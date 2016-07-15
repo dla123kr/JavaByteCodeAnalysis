@@ -16,9 +16,9 @@ public class JBCClass {
     private ArrayList<JBCField> jbcFields = new ArrayList<JBCField>();
     private ArrayList<JBCMethod> jbcMethods = new ArrayList<JBCMethod>();
 
-    public JBCClass(String className, String inAnyPackage) {
-        this.className = className;
+    public JBCClass(String inAnyPackage, String className) {
         this.inAnyPackage = inAnyPackage;
+        this.className = className;
     }
 
     public boolean isLoaded() {

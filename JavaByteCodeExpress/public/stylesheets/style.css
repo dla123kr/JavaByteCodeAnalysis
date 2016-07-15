@@ -5,11 +5,25 @@ a {
 .center {
     position: relative;
     width: 600px;
-    margin: 0 auto !important
+    margin: 0 auto !important;
 }
 
-.main {
-    position: relative;
-    width: 400px;
-    margin: 70px auto !important;
+.horizontal-main {
+    text-align: center;
+}
+
+.vertical-main {
+    display: inline-block;
+    margin-top: 80px;
+    margin-bottom: 20px;
+}
+
+#details-table{
+    width: 1000px;
+    margin: 0 auto;
+}
+
+.details-sub-table{
+    width: 800px;
+    margin: 0 auto;
 }

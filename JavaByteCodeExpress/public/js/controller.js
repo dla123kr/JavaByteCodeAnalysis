@@ -1,8 +1,9 @@
 $(document).ready(function(){
     $("#uploadButton").click(function () {
-        alert("눌렀다");
         var form = $('form')[0];
         var formData = new FormData(form);
+
+        $("#uploadButton").attr('disabled', true);
 
         $.ajax({
             url: "http://localhost:8080/",
@@ -11,12 +12,28 @@ $(document).ready(function(){
             data: formData,
             type: 'POST',
             success: function (result) {
-                console.log(result);
-                alert("업로드 성공!!");
+                $("#uploadButton").attr('disabled', false);
+                loadTables(result);
             },
             error: function () {
                 alert("에러 발생");
+                $("#uploadButton").attr('disabled', false);
             }
         });
     });
+
+    var isFirstLoad = true;
+    function loadTables(classes){
+        if(isFirstLoad){
+            $("#details-table").css("visibility", "visible");
+            isFirstLoad = false;
+        }
+        console.log(classes);
+
+        // 업데이트를 하자
+        detailsTable.update(classes);
+    };
+
+
 });
+

@@ -17,31 +17,71 @@
     <script src="/jui-core/dist/core.min.js"></script>
     <script src="/jui/dist/ui.min.js"></script>
     <script src="/jui-grid/dist/grid.min.js"></script>
-    <script src="/jui-core/dist/core.min.js"></script>
     <script src="/jui-chart/dist/chart.min.js"></script>
 
     <!-- it's mine -->
     <script src="/js/controller.js"></script>
+    <script src="/js/details-table.js"></script>
 </head>
 <body class="jui">
-<header class="navbar fixed top" style="background: #2B3340; height: 75px;">
-    <div class="center" style="position: relative;">
-        <span>
-            <a style="cursor: pointer;" onclick="location.href='/'">
-                <i class="icon icon-analysis" style="font-size: 50px; color: white; margin-top: 7px;">
-                    JavaByteCode Analysis
-                </i>
-            </a>
-        </span>
-    </div>
-</header>
 
-<br><br>
-<div class="main">
-    <form id="frmUpload" method="post" enctype="multipart/form-data">
-        <input type="file" style="cursor: pointer;" name="uploadFile" multiple/>
-        <input type="button" id="uploadButton" class="btn focus" value="클릭"/>
-    </form>
-</div>
+    <header class="navbar fixed top" style="background: #2B3340; height: 75px;">
+        <div class="center" style="position: relative;">
+                <span>
+                    <a style="cursor: pointer;" onclick="location.href='/'">
+                        <i class="icon icon-analysis" style="font-size: 50px; color: white; margin-top: 7px;">
+                            <span style="font-family: Consolas; font-size: 40px;"> JavaByteCode Analysis</span>
+                        </i>
+                    </a>
+                </span>
+        </div>
+    </header>
+
+    <section class="horizontal-main">
+        <p class="vertical-main">
+            <div class="h2" style="margin-bottom:10px;">분석할 파일을 선택하세요. <small>*.class, *.jar</small></div>
+            <form id="frmUpload" method="post" enctype="multipart/form-data">
+                <input type="file" style="cursor: pointer;" name="uploadFile" multiple accept=".class, .jar"/>
+                <input type="button" id="uploadButton" class="btn focus" value="Load"/>
+                <input type="button" id="clearButton" class="btn" value="Clear" onclick="location.href='/'"/>
+            </form>
+        </p>
+        <hr />
+        <p>
+            <table id="details-table" class="table expand" style="visibility: collapse;">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;"></th>
+                        <th style="text-align: center;">Class Name</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </p>
+    </section>
+
 </body>
 </html>
+
+<!-- details-table의 template -->
+<script data-jui="#details-table" data-tpl="row" type="text/template">
+    <tr>
+        <td><i class="icon-left"></i></td>
+        <td><!= classLongName !></td>
+    </tr>
+</script>
+<script data-jui="#details-table" data-tpl="expand" type="text/template">
+    <div class="row">
+        <div class="group">
+            <span class="h1">
+                <! if(inAnyPackage != null) { !>
+                <small>
+                    <!= inAnyPackage !>
+                </small>
+                <! } !>
+                <!= className !>
+            </span>
+        </div>
+    </div>
+
+</script>

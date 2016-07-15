@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Created by LimSJ on 2016-07-06.
- */
 public class JBCField {
     private String inAnyClass;
     private String fieldName;
