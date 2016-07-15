@@ -45,7 +45,7 @@
     <form id="frmUpload" method="post" enctype="multipart/form-data">
         <input type="file" style="cursor: pointer;" name="uploadFile" multiple accept=".class, .jar"/>
         <input type="button" id="uploadButton" class="btn focus" value="Load"/>
-        <input type="button" id="clearButton" class="btn" value="Clear" onclick="location.href='/'"/>
+        <input type="button" id="clearButton" class="btn" value="Clear"/>
     </form>
     </p>
     <hr/>
@@ -107,14 +107,14 @@
                             <tbody>
                             <! if(superClassName != 'java.lang.Object') { !>
                             <tr>
-                                <td style="width: 100px;">SuperClass</td>
+                                <td>SuperClass</td>
                                 <td><!= superClassName !></td>
                             </tr>
                             <! } !>
 
                             <! if(interfaceNames.length > 0) { !>
                             <tr>
-                                <td style="width: 100px;" rowspan="<!= interfaceNames.length !>">Interfaces</td>
+                                <td rowspan="<!= interfaceNames.length !>">Interfaces</td>
                                 <td><!= interfaceNames[0] !></td>
                             </tr>
                             <! for(var i = 1; i < interfaceNames.length; i++) { !>

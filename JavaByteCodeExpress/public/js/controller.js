@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(document).ready(function () {
     $("#uploadButton").click(function () {
         var form = $('form')[0];
         var formData = new FormData(form);
@@ -22,9 +22,27 @@ $(document).ready(function(){
         });
     });
 
+    $("#clearButton").click(function () {
+        $.ajax({
+            url: "http://localhost:8080/clear/",
+            processData: false,
+            contentType: false,
+            data: null,
+            type: 'GET',
+            success: function (flag) {
+                console.log(flag);
+                location.href = '/';
+            },
+            error: function () {
+                alert("Clear 실패");
+            }
+        });
+    });
+
     var isFirstLoad = true;
-    function loadTables(classes){
-        if(isFirstLoad){
+
+    function loadTables(classes) {
+        if (isFirstLoad) {
             $("#details-table").css("visibility", "visible");
             isFirstLoad = false;
         }
@@ -33,7 +51,5 @@ $(document).ready(function(){
         // 업데이트를 하자
         detailsTable.update(classes);
     };
-
-
 });
 

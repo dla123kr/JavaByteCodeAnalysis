@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
 @CrossOrigin(origins = "http://localhost:3000")
 public class FileUploadController {
 
-    private static Logger log = Logger.getLogger(FileUploadController.class.getName());
+    private static Logger log = Logger.getLogger(FileUploadController.class);
 
     @RequestMapping(path="/", method= RequestMethod.POST)
     public ArrayList<JBCClass> fildUploaded(@RequestParam("uploadFile") MultipartFile[] files){
