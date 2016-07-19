@@ -22,6 +22,8 @@
     <!-- it's mine -->
     <script src="/js/controller.js"></script>
     <script src="/js/details-table.js"></script>
+    <script src="/js/topology.js"></script>
+    <script src="/js/remote-controller.js"></script>
 </head>
 <body class="jui">
 
@@ -49,17 +51,43 @@
     </form>
     </p>
     <hr/>
-    <p>
-    <table id="details-table" class="table expand" style="visibility: collapse;">
-        <thead>
-        <tr>
-            <th style="width: 30px;"></th>
-            <th style="text-align: center;">Class Name</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    </p>
+
+    <div id="content-main" style="visibility: collapse;">
+
+        <p>
+        <div id="remote-controller" class="window" style="text-align: left;">
+            <div class="head">
+                <div class="left">Package Tree</div>
+                <div class="right">
+                    <a href="#" class="close"><i class="icon-exit"></i></a>
+                </div>
+            </div>
+
+            <div class="body">
+                <ul id="package-tree" class="tree line-file"></ul>
+            </div>
+        </div>
+        </p>
+
+        <p>
+        <div id="topology">
+
+        </div>
+        </p>
+        <hr/>
+
+        <p>
+        <table id="details-table" class="table expand">
+            <thead>
+            <tr>
+                <th style="width: 30px;"></th>
+                <th style="text-align: center;">Class Name</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </p>
+    </div>
 </section>
 
 </body>
@@ -71,7 +99,11 @@
 <script data-jui="#details-table" data-tpl="row" type="text/template">
     <tr>
         <td><i class="icon-left"></i></td>
+        <! if(!loaded) { !>
+        <td style="color: red;"><!= classLongName !></td>
+        <! } else { !>
         <td><!= classLongName !></td>
+        <! } !>
     </tr>
 </script>
 <script data-jui="#details-table" data-tpl="expand" type="text/template">
@@ -85,6 +117,11 @@
                 <! } !>
                 <!= className !>
             </span>
+            <! if(!loaded) { !>
+            <span class="h3" style="color: red;">
+                ( Unloaded )
+            </span>
+            <! } !>
         </div>
     </div>
     <div class="row" style="margin-top: 10px;">
@@ -97,7 +134,7 @@
             </thead>
             <tbody>
 
-            <! if(superClassName != 'java.lang.Object' || interfaceNames.length > 0) { !>
+            <! if((superClassName != 'java.lang.Object' && superClassName != null) || interfaceNames.length > 0) { !>
             <tr>
                 <td style="font-weight: bold">Class</td>
                 <td>
@@ -105,7 +142,7 @@
                     <div>
                         <table class="table simple hover" style="width: 100%;">
                             <tbody>
-                            <! if(superClassName != 'java.lang.Object') { !>
+                            <! if(superClassName != 'java.lang.Object' && superClassName != null) { !>
                             <tr>
                                 <td>SuperClass</td>
                                 <td><!= superClassName !></td>
@@ -118,7 +155,9 @@
                                 <td><!= interfaceNames[0] !></td>
                             </tr>
                             <! for(var i = 1; i < interfaceNames.length; i++) { !>
-                            <tr><td><!= interfaceNames[i] !></td></tr>
+                            <tr>
+                                <td><!= interfaceNames[i] !></td>
+                            </tr>
                             <! } !>
                             <! } !>
                             </tbody>
@@ -167,10 +206,21 @@
                             <! for(var i = 0; i < jbcmethods.length; i++) { !>
 
                             <tr>
-                                <! var methodRowCount = 3 + jbcmethods[i].parameters.length + jbcmethods[i].calledMethods.length; !>
-                                <td rowspan="<!= methodRowCount !>"><!= jbcmethods[i].methodName !></td>
+                                <! var methodRowCount = 3 + jbcmethods[i].parameters.length +
+                                jbcmethods[i].calledMethods.length; !>
+                                <td rowspan="<!= methodRowCount !>">
+                                    <span><!= jbcmethods[i].methodName !></span>
+                                    <! if(loaded && jbcmethods[i].accessModifier == null && jbcmethods[i].returnType ==
+                                    null) { !>
+                                    <br/><span style="color: red;"><small>( Super )</small></span>
+                                    <! } !>
+                                </td>
                                 <td>Access Modifier</td>
-                                <td><!= jbcmethods[i].accessModifier !></td>
+                                <td>
+                                    <! if(jbcmethods[i].accessModifier != null) { !>
+                                    <!= jbcmethods[i].accessModifier !>
+                                    <! } !>
+                                </td>
                             </tr>
 
                             <tr>
@@ -188,7 +238,9 @@
                                 <td><!= jbcmethods[i].parameters[0] !></td>
                             </tr>
                             <! for(var j = 1; j < jbcmethods[i].parameters.length; j++) { !>
-                            <tr><td><!= jbcmethods[i].parameters[j] !></td></tr>
+                            <tr>
+                                <td><!= jbcmethods[i].parameters[j] !></td>
+                            </tr>
                             <! } !>
                             <! } !>
 
@@ -203,7 +255,9 @@
                                 <td><!= jbcmethods[i].calledMethods[0] !></td>
                             </tr>
                             <! for(var j = 1; j < jbcmethods[i].calledMethods.length; j++) { !>
-                            <tr><td><!= jbcmethods[i].calledMethods[j] !></td></tr>
+                            <tr>
+                                <td><!= jbcmethods[i].calledMethods[j] !></td>
+                            </tr>
                             <! } !>
                             <! } !>
 
@@ -219,4 +273,19 @@
             </tbody>
         </table>
     </div>
+</script>
+
+<!-- package-tree의 template -->
+<script data-jui="#package-tree" data-tpl="node" type="text/template">
+    <li>
+        <! if(!loaded) { !>
+        <div style="color: red;">
+            <! console.log("test"); !>
+            <! } else { !>
+            <div>
+                <! } !>
+                <i></i> <!= name !>
+            </div>
+            <ul></ul>
+    </li>
 </script>

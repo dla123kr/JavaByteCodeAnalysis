@@ -92,6 +92,7 @@ public class FileUploadController {
         }
 
         HandleJBC.countingMethodCall(classes);
+        HandleJBC.testUnLoaded();
 
         return classes;
     }
