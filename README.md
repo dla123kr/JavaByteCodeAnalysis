@@ -23,5 +23,3 @@ Spring Framework로 구현한 RESTful API입니다.
 * 따라서 ***npm install***을 진행하시고, ***public***폴더에 ***jui, jui-chart, jui-core, jui-grid***를 설치하여 주십시오.
 
 ***
-
-* 아직 중복처리 및 Clear 기능을 만들지 못하여 한번 Load한 후에 다음 Load를 위해선 **JavaByteCodeAnalysis**를 다시 실행하여 주십시오.
