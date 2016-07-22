@@ -1,11 +1,13 @@
 package function;
 
 import javassist.*;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.analysis.ControlFlow;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
-import model.JBCClass;
-import model.JBCMethod;
+import model.*;
 import org.apache.log4j.Logger;
+import util.NodeType;
 
 import java.util.*;
 
@@ -14,245 +16,145 @@ import java.util.*;
  */
 public class HandleJBC {
 
-    private static Logger log = Logger.getLogger(HandleJBC.class);
-    private static ArrayList<String> tmpCalledMethods = new ArrayList<>();
+    private static final Logger log = Logger.getLogger(HandleJBC.class);
+    public static ArrayList<String> tmpCalledMethods = new ArrayList<>();
 
-    /**
-     * 입력받은 flag를 통해 접근제어자를 반환
-     *
-     * @param flag Modifier flag
-     * @return 접근제어자
-     */
-    public static String getModifier(int flag) {
-        String accessModifier = "";
+    private static ArrayList<Node> staticNodes = new ArrayList<>();
 
-        if (Modifier.isPublic(flag))
-            accessModifier += "public ";
-        else if (Modifier.isPrivate(flag))
-            accessModifier += "private ";
-        else if (Modifier.isProtected(flag))
-            accessModifier += "protected ";
-
-        if (Modifier.isStatic(flag))
-            accessModifier += "static ";
-        if (Modifier.isFinal(flag))
-            accessModifier += "final ";
-        // TODO: 2016-07-08 abstract랑 interface는 어떻게 할꺼야 ?
-        return accessModifier;
+    public static ArrayList<Node> getStaticNodes() {
+        return staticNodes;
     }
 
-    /**
-     * Descriptor를 보고 반환타입을 분석
-     *
-     * @param desc     Descriptor
-     * @param isMethod 함수면 true, 필드면 false
-     * @return 반환타입
-     */
-    private static String getReturnType(String desc, boolean isMethod) {
-        String type = "";
-        int arrDimension = 0;
+    public static void addNode(ClassFile classFile) {
+        ClassPool classPool = ClassPool.getDefault();
 
-        int index = 0;
-        if (isMethod) {
-            index = desc.indexOf(")") + 1;
+        CtClass ctClass = classPool.makeClass(classFile);
+        CtField[] ctFields = ctClass.getDeclaredFields();
+        CtConstructor[] ctConstructors = ctClass.getDeclaredConstructors();
+        CtMethod[] ctMethods = ctClass.getDeclaredMethods();
+
+        _JBCClass jbcClass = new _JBCClass(ctClass.getSimpleName(), ctClass.getPackageName());
+        jbcClass.setIsLoaded(true);
+        jbcClass.setSuperClassName(classFile.getSuperclass());
+        Collections.addAll(jbcClass.getInterfaceNames(), classFile.getInterfaces());
+
+        for (CtField ctField : ctFields) {
+            _JBCField jbcField = new _JBCField(ctField.getName(), jbcClass);
+
+            jbcField.setAccessModifier(ctField.getModifiers());
+            jbcField.setReturnType(ctField.getSignature(), false);
         }
 
-        while (desc.charAt(index) == '[') {
-            index++;
-            arrDimension++;
+        for (CtConstructor ctConstructor : ctConstructors) {
+            _JBCMethod jbcMethod = new _JBCMethod(ctConstructor.getName(), jbcClass);
+
+            jbcMethod.setAccessModifier(ctConstructor.getModifiers());
+
+            jbcMethod.setParameters(ctConstructor.getSignature());
+            jbcMethod.setCalledMethods(ctConstructor);
         }
 
-        if (desc.charAt(index) == 'L') {
-            type = desc.substring(index + 1).replace("/", ".");
+        for (CtMethod ctMethod : ctMethods) {
+            _JBCMethod jbcMethod = new _JBCMethod(ctMethod.getName(), jbcClass);
+
+            jbcMethod.setAccessModifier(ctMethod.getModifiers());
+            jbcMethod.setReturnType(ctMethod.getSignature(), true);
+
+            jbcMethod.setParameters(ctMethod.getSignature());
+            jbcMethod.setCalledMethods(ctMethod);
+        }
+    }
+
+    // 새로만들면 부모 잘 처리하자
+    // 기존에 있는 클래스 + 있는 함수면 calledCount++
+    // 기존에 있는 클래스 + 없는 함수면 SuperClass의 것. 1로 초기화해주고 추가
+    // 기존에 없는 클래스면 추가 !
+    private static void recursiveFindMethod(String indexes, Node parent) {
+        String[] splitted = indexes.split("\\.");
+
+        if (splitted.length == 1) {
+            // 함수 찾자
+            String name = splitted[0];
+
+            for (int i = 0; i < parent.getChildren().size(); i++) {
+                if (name.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Method")) {
+                    // 찾음
+                    _JBCMethod methodNode = (_JBCMethod) parent.getChildren().get(i);
+                    methodNode.setCalledCount(methodNode.getCalledCount() + 1);
+                    return;
+                }
+            }
+
+            // 못 찾음
+            _JBCMethod jbcMethod = new _JBCMethod(name, parent);
+            jbcMethod.setCalledCount(1);
+        } else if (splitted.length == 2) {
+            // 클래스 찾자
+            String className = splitted[0];
+            String methodName = splitted[1];
+
+            for (int i = 0; i < parent.getChildren().size(); i++) {
+                if (className.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Class")) {
+                    _JBCClass classNode = (_JBCClass) parent.getChildren().get(i);
+                    recursiveFindMethod(indexes.substring(className.length() + 1), classNode);
+                    return;
+                }
+            }
+
+            // 못 찾음
+            _JBCClass jbcClass = null;
+            if (parent.getName().equals("(default)"))
+                jbcClass = new _JBCClass(className, (String) null);
+            else
+                jbcClass = new _JBCClass(className, parent);
+            _JBCMethod jbcMethod = new _JBCMethod(methodName, jbcClass);
+            jbcMethod.setCalledCount(1);
         } else {
-            switch (desc.charAt(index)) {
-                case 'B':
-                    type = "byte";
-                    break;
-                case 'C':
-                    type = "char";
-                    break;
-                case 'D':
-                    type = "double";
-                    break;
-                case 'F':
-                    type = "float";
-                    break;
-                case 'I':
-                    type = "int";
-                    break;
-                case 'J':
-                    type = "long";
-                    break;
-                case 'S':
-                    type = "short";
-                    break;
-                case 'Z':
-                    type = "boolean";
-                    break;
-                case 'V':
-                    type = "void";
-                    break;
+            // 패키지 찾자
+            String packName = splitted[0];
+            for (int i = 0; i < parent.getChildren().size(); i++) {
+                if (packName.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Package")) {
+                    Node packNode = parent.getChildren().get(i);
+                    recursiveFindMethod(indexes.substring(packName.length() + 1), packNode);
+                    return;
+                }
             }
+
+            // 못찾음
+            Node newPackage = new Node(packName);
+            newPackage.setParent(parent);
+            parent.getChildren().add(newPackage);
+            recursiveFindMethod(indexes.substring(packName.length() + 1), newPackage);
         }
-
-        if (type.charAt(type.length() - 1) == ';')
-            type = type.substring(0, type.length() - 1);
-        if (arrDimension-- > 0)
-            type += "[]";
-
-        return type;
     }
 
-    /**
-     * 필드 반환타입을 가져온다
-     *
-     * @param desc Field Descriptor
-     * @return 필드 반환타입
-     */
-    public static String getFieldReturnType(String desc) {
-        return getReturnType(desc, false);
-    }
-
-    /**
-     * 함수 반환타입을 가져온다
-     *
-     * @param desc Method Descriptor
-     * @return 함수 반환타입
-     */
-    public static String getMethodReturnType(String desc) {
-        return getReturnType(desc, true);
-    }
-
-    /**
-     * Method의 Descriptor를 받아 파라미터가 뭐뭐있는지 반환
-     *
-     * @param desc Method Descriptor
-     * @return 파라미터 종류가 담긴 ArrayList를 반환
-     */
-    public static ArrayList<String> getMethodParameters(String desc) {
-        ArrayList<String> params = null;
-        StringTokenizer tokens = null;
-
-        int start = desc.indexOf("(") + 1;
-        int end = desc.indexOf(")");
-
-        if (start < end) {
-            String str = desc.substring(start, end);
-            tokens = new StringTokenizer(str, ";");
-        }
-        if (tokens == null || !tokens.hasMoreElements())
-            return null;
-
-        params = new ArrayList<>();
-        while (tokens.hasMoreElements()) {
-            String token = tokens.nextToken();
-            ArrayList<String> oneMore = getMultipleToken(token);
-
-            for (String realToken : oneMore) {
-                String param = getFieldReturnType(realToken);
-                params.add(param);
-            }
-        }
-        return params;
-    }
-
-    /**
-     * 한 토큰 내에 여러개의 파라미터가 존재할 수 있으니 잘라냄
-     *
-     * @param token Descriptor의 조각
-     * @return Descriptor를 더 잘게 조각냄
-     */
-    private static ArrayList<String> getMultipleToken(String token) {
-        ArrayList<String> tokens = new ArrayList<>();
-
-        int start = 0;
-        int end = token.length();
-
-        while (start < end) {
-            String type = "";
-            int arrDimension = 0;
-
-            while (token.charAt(start + arrDimension) == '[')
-                arrDimension++;
-
-            char t = token.charAt(start + arrDimension);
-            if (t != 'L') { // 클래스가 아닌 경우
-                tokens.add(token.substring(start, start + arrDimension + 1));
-                start += arrDimension + 1;
-            } else { // 클래스인 경우
-                tokens.add(token.substring(start, end));
-                break;
-            }
-        }
-
-        return tokens;
-    }
-
-    public static ArrayList<String> getCalledMethods(CtBehavior ct) {
-        ArrayList<String> methods = new ArrayList<>();
-        try {
-            ct.instrument(
-                    new ExprEditor() {
-                        @Override
-                        public void edit(MethodCall m) {
-                            String methodName = m.getClassName() + "." + m.getMethodName(); // .으로 쪼개면 패키지정보도 나온다
-                            methods.add(methodName);
-                            tmpCalledMethods.add(methodName);
-                        }
-                    }
-            );
-        } catch (CannotCompileException e) {
-            System.err.println("===========================");
-            System.err.println("콜된 함수 찾던 도중 에러");
-            e.printStackTrace();
-        }
-
-        HashSet hs = new HashSet(methods);
-        ArrayList<String> notDuplicationMethods = new ArrayList<>(hs);
-
-        return notDuplicationMethods;
-    }
-
-    public static void countingMethodCall(ArrayList<JBCClass> jbcClasses) {
+    public static void countingMethodCall() {
         for (String str : tmpCalledMethods) {
-            String[] splitted = str.split("\\.");
-            String methodName = splitted[splitted.length - 1];
-            String key = str.replace("." + methodName, "");
-            boolean flag = false;
+            String[] splitted = str.split("\\."); // 패키지.패키지.패키지.클래스.함수이름
 
-            if (StaticDatas.getJBCClassHashtable().containsKey(key)) {
-                JBCClass value = StaticDatas.getJBCClassHashtable().get(key);
-                for (JBCMethod jm : value.getJBCMethods()) {
-                    if (jm.getMethodName().equals(methodName)) {
-                        jm.setCalledCount(jm.getCalledCount() + 1);
-                        flag = true;
+            // splitted Length가 3보다 작으면 default로 (왜냐면 패키지없이 클래스이름.함수이름 이니깐)
+            // splitted가 2면 클래스 찾고, 1이면 함수 찾는다
+            Node callingNode = null;
+            if (splitted.length < 3) {
+                callingNode = getStaticNodes().get(0); // (default)
+                recursiveFindMethod(str, callingNode);
+            } else {
+                boolean isFind = false;
+                for (int i = 1; i < getStaticNodes().size(); i++) {
+                    if (splitted[0].equals(getStaticNodes().get(i).getName()) && getStaticNodes().get(i).getType().equals("Package")) {
+                        callingNode = getStaticNodes().get(i);
+                        isFind = true;
                         break;
                     }
                 }
-
-                if(!flag){
-                    JBCMethod newJBCMethod = new JBCMethod(value.getClassName(), methodName);
-                    newJBCMethod.setCalledCount(1);
-                    value.getJBCMethods().add(newJBCMethod);
+                if (!isFind) {
+                    // 못 찾았으니 만들자
+                    Node newPackage = new Node(splitted[0]);
+                    getStaticNodes().add(newPackage);
+                    callingNode = newPackage;
                 }
-            } else {
-                splitted = key.split("\\.");
-                String className = splitted[splitted.length - 1];
-                String packName = null;
-                if(splitted.length > 1)
-                    packName = key.replace("." + className, "");
 
-                JBCClass newJBCClass = new JBCClass(packName, className);
-                newJBCClass.setLoaded(false);
-
-                JBCMethod newJBCMethod = new JBCMethod(className, methodName);
-                newJBCMethod.setCalledCount(1);
-                newJBCClass.getJBCMethods().add(newJBCMethod);
-
-                // put하자
-                StaticDatas.getJBCClassHashtable().put(key, newJBCClass);
-                jbcClasses.add(newJBCClass);
+                recursiveFindMethod(str.substring(splitted[0].length() + 1), callingNode);
             }
         }
 

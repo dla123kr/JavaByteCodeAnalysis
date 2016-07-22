@@ -20,6 +20,8 @@
     <script src="/jui-chart/dist/chart.min.js"></script>
 
     <!-- it's mine -->
+    <script>
+    </script>
     <script src="/js/controller.js"></script>
     <script src="/js/details-table.js"></script>
     <script src="/js/topology.js"></script>
@@ -59,29 +61,33 @@
             <div class="head">
                 <div class="left">Package Tree</div>
                 <div class="right">
-                    <a href="#" class="close"><i class="icon-exit"></i></a>
+                    <a href="#" class="close" onclick="switchTree.setValue(false)"><i class="icon-exit"></i></a>
                 </div>
             </div>
 
             <div class="body">
-                <ul id="package-tree" class="tree line-file"></ul>
+                <ul id="package-tree" class="tree line"></ul>
             </div>
         </div>
         </p>
 
-        <p>
-        <div id="topology">
+        <!--<p>-->
+        <!--<div id="topology">-->
 
+        <!--</div>-->
+        <!--</p>-->
+        <!--<hr/>-->
+
+        <p>
+        <div style="margin-right: 880px;">
+            <button id="btn-home" style="margin-bottom: 20px; width: 30px; height: 30px;"><i class="icon-home"></i></button><button id="btn-up" style="margin-bottom: 20px; swidth: 30px; height: 30px; ;"><i class="icon-arrow3"></i></button>
+            <div id="switch-tree" class="switch inner" style="margin-bottom: 0px;"></div>
         </div>
-        </p>
-        <hr/>
-
-        <p>
         <table id="details-table" class="table expand">
             <thead>
             <tr>
                 <th style="width: 30px;"></th>
-                <th style="text-align: center;">Class Name</th>
+                <th style="text-align: center;">Name</th>
             </tr>
             </thead>
             <tbody></tbody>
@@ -89,7 +95,6 @@
         </p>
     </div>
 </section>
-
 </body>
 </html>
 
@@ -98,26 +103,27 @@
 <!-- details-table의 template -->
 <script data-jui="#details-table" data-tpl="row" type="text/template">
     <tr>
-        <td><i class="icon-left"></i></td>
-        <! if(!loaded) { !>
-        <td style="color: red;"><!= classLongName !></td>
+        <! if(type == "Package") { !>
+        <td><i class="icon-document"></i></td>
+        <td><!= longName !></td>
         <! } else { !>
-        <td><!= classLongName !></td>
+        <td><i class="icon-left"></i></td>
+        <! if(!isLoaded) { !>
+        <td style="color: red;"><!= longName !></td>
+        <! } else { !>
+        <td><!= longName !></td>
+        <! } !>
         <! } !>
     </tr>
 </script>
+
 <script data-jui="#details-table" data-tpl="expand" type="text/template">
     <div class="row">
         <div class="group">
             <span class="h1">
-                <! if(inAnyPackage != null) { !>
-                <small>
-                    <!= inAnyPackage !>
-                </small>
-                <! } !>
-                <!= className !>
+                <!= longName !>
             </span>
-            <! if(!loaded) { !>
+            <! if(!isLoaded) { !>
             <span class="h3" style="color: red;">
                 ( Unloaded )
             </span>
@@ -168,7 +174,21 @@
             </tr>
             <! } !>
 
-            <! if(jbcfields.length > 0) { !>
+            <!
+
+            var fields = [];
+            var methods = [];
+            for(var i = 0; i < children.length; i++) {
+            if (children[i].type == "Field") {
+            fields.push(children[i]);
+            } else if (children[i].type == "Method") {
+            methods.push(children[i]);
+            }
+            }
+
+            !>
+
+            <! if(fields.length > 0) { !>
             <tr>
                 <td style="font-weight: bold">Fields</td>
                 <td>
@@ -176,15 +196,15 @@
                     <div>
                         <table class="table simple hover" style="width: 100%;">
                             <tbody>
-                            <! for(var i = 0; i < jbcfields.length; i++) { !>
+                            <! for(var i = 0; i < fields.length; i++) { !>
                             <tr>
-                                <td rowspan="2"><!= jbcfields[i].fieldName !></td>
+                                <td rowspan="2"><!= fields[i].name !></td>
                                 <td>Access Modifier</td>
-                                <td><!= jbcfields[i].accessModifier !></td>
+                                <td><!= fields[i].accessModifier !></td>
                             </tr>
                             <tr>
                                 <td>Return Type</td>
-                                <td><!= jbcfields[i].returnType !></td>
+                                <td><!= fields[i].returnType !></td>
                             </tr>
                             <! } !>
                             </tbody>
@@ -195,7 +215,7 @@
             </tr>
             <! } !>
 
-            <! if(jbcmethods.length > 0) { !>
+            <! if(methods.length > 0) { !>
             <tr>
                 <td style="font-weight: bold">Methods</td>
                 <td>
@@ -203,22 +223,22 @@
                     <div>
                         <table class="table simple hover" style="width: 100%;">
                             <tbody>
-                            <! for(var i = 0; i < jbcmethods.length; i++) { !>
+                            <! for(var i = 0; i < methods.length; i++) { !>
 
                             <tr>
-                                <! var methodRowCount = 3 + jbcmethods[i].parameters.length +
-                                jbcmethods[i].calledMethods.length; !>
+                                <! var methodRowCount = 3 + methods[i].parameters.length +
+                                methods[i].calledMethods.length; !>
                                 <td rowspan="<!= methodRowCount !>">
-                                    <span><!= jbcmethods[i].methodName !></span>
-                                    <! if(loaded && jbcmethods[i].accessModifier == null && jbcmethods[i].returnType ==
+                                    <span><!= methods[i].name !></span>
+                                    <! if(isLoaded && methods[i].accessModifier == null && methods[i].returnType ==
                                     null) { !>
                                     <br/><span style="color: red;"><small>( Super )</small></span>
                                     <! } !>
                                 </td>
                                 <td>Access Modifier</td>
                                 <td>
-                                    <! if(jbcmethods[i].accessModifier != null) { !>
-                                    <!= jbcmethods[i].accessModifier !>
+                                    <! if(methods[i].accessModifier != null) { !>
+                                    <!= methods[i].accessModifier !>
                                     <! } !>
                                 </td>
                             </tr>
@@ -226,37 +246,37 @@
                             <tr>
                                 <td>Return Type</td>
                                 <td>
-                                    <! if(jbcmethods[i].returnType != null) { !>
-                                    <!= jbcmethods[i].returnType !>
+                                    <! if (methods[i].returnType != null) { !>
+                                    <!= methods[i].returnType !>
                                     <! } !>
                                 </td>
                             </tr>
 
-                            <! if(jbcmethods[i].parameters.length > 0) { !>
+                            <! if (methods[i].parameters.length > 0) { !>
                             <tr>
-                                <td rowspan="<!= jbcmethods[i].parameters.length !>">Parameters</td>
-                                <td><!= jbcmethods[i].parameters[0] !></td>
+                                <td rowspan="<!= methods[i].parameters.length !>">Parameters</td>
+                                <td><!= methods[i].parameters[0] !></td>
                             </tr>
-                            <! for(var j = 1; j < jbcmethods[i].parameters.length; j++) { !>
+                            <! for(var j = 1; j < methods[i].parameters.length; j++) { !>
                             <tr>
-                                <td><!= jbcmethods[i].parameters[j] !></td>
+                                <td><!= methods[i].parameters[j] !></td>
                             </tr>
                             <! } !>
                             <! } !>
 
                             <tr>
                                 <td>Called Count</td>
-                                <td><!= jbcmethods[i].calledCount !></td>
+                                <td><!= methods[i].calledCount !></td>
                             </tr>
 
-                            <! if(jbcmethods[i].calledMethods.length > 0) { !>
+                            <! if (methods[i].calledMethods.length > 0) { !>
                             <tr>
-                                <td rowspan="<!= jbcmethods[i].calledMethods.length !>">Called Methods</td>
-                                <td><!= jbcmethods[i].calledMethods[0] !></td>
+                                <td rowspan="<!= methods[i].calledMethods.length !>">Called Methods</td>
+                                <td><!= methods[i].calledMethods[0] !></td>
                             </tr>
-                            <! for(var j = 1; j < jbcmethods[i].calledMethods.length; j++) { !>
+                            <! for (var j = 1; j < methods[i].calledMethods.length; j++) { !>
                             <tr>
-                                <td><!= jbcmethods[i].calledMethods[j] !></td>
+                                <td><!= methods[i].calledMethods[j] !></td>
                             </tr>
                             <! } !>
                             <! } !>
@@ -278,13 +298,17 @@
 <!-- package-tree의 template -->
 <script data-jui="#package-tree" data-tpl="node" type="text/template">
     <li>
-        <! if(!loaded) { !>
+        <! if(!isLoaded) { !>
         <div style="color: red;">
-            <! console.log("test"); !>
             <! } else { !>
             <div>
                 <! } !>
-                <i></i> <!= name !>
+                <! if(type == "Package") { !>
+                <i class="icon-document"></i>
+                <! } else if(type == "Class") { !>
+                <i class="icon-script"></i>
+                <! } !>
+                <!= name !>
             </div>
             <ul></ul>
     </li>
