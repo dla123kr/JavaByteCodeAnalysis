@@ -1,58 +1,42 @@
 package model;
 
+import util.NodeType;
+
 import java.util.ArrayList;
 
 /**
- * Created by LimSJ on 2016-07-06.
+ * Created by LimSJ on 2016-07-19.
  */
-public class JBCClass {
+public class JBCClass extends Node {
+
     private boolean isLoaded = false;
-    private String inAnyPackage;
+    private String superClassName = null;
+    private ArrayList<String> interfaceNames = new ArrayList<>();
 
-    private String className;
-    private String superClassName;
-    private ArrayList<String> interfaceNames = new ArrayList<String>();
+    public JBCClass(String name, String packName) {
+        super(name);
+        this.setType(NodeType.CLASS);
+        this.isLoaded = false;
 
-    private ArrayList<JBCField> jbcFields = new ArrayList<JBCField>();
-    private ArrayList<JBCMethod> jbcMethods = new ArrayList<JBCMethod>();
-
-    public JBCClass(String inAnyPackage, String className) {
-        this.inAnyPackage = inAnyPackage;
-        this.className = className;
+        this.setParent(packName);
     }
 
-    public boolean isLoaded() {
+    public JBCClass(String name, Node parent) {
+        super(name);
+        this.setType(NodeType.CLASS);
+        this.isLoaded = false;
+
+        this.setParent(parent);
+        if (parent != null)
+            parent.getChildren().add(this);
+    }
+
+    public void setIsLoaded(boolean isLoaded) {
+        this.isLoaded = isLoaded;
+    }
+
+    public boolean getIsLoaded() {
         return isLoaded;
-    }
-
-    public void setLoaded(boolean loaded) {
-        isLoaded = loaded;
-    }
-
-    public String getInAnyPackage() {
-        return inAnyPackage;
-    }
-
-    public void setInAnyPackage(String inAnyPackage) {
-        this.inAnyPackage = inAnyPackage;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public String getClassLongName() {
-        String longName = "";
-        if(inAnyPackage != null)
-            longName += inAnyPackage;
-        if(!longName.equals(""))
-            longName += ".";
-        longName += className;
-        return longName;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
     }
 
     public String getSuperClassName() {
@@ -66,14 +50,4 @@ public class JBCClass {
     public ArrayList<String> getInterfaceNames() {
         return interfaceNames;
     }
-
-    public ArrayList<JBCField> getJBCFields() {
-        return jbcFields;
-    }
-
-    public ArrayList<JBCMethod> getJBCMethods() {
-        return jbcMethods;
-    }
-
-
 }

@@ -9,20 +9,6 @@ $(document).ready(function () {
         $("#uploadButton").attr('disabled', true);
 
         $.ajax({
-            url: "http://localhost:8080/clear/",
-            processData: false,
-            contentType: false,
-            data: null,
-            type: 'GET',
-            success: function (flag) {
-                console.log(flag);
-            },
-            error: function () {
-                alert("Clear 실패");
-            }
-        });
-
-        $.ajax({
             url: "http://localhost:8080/",
             processData: false,
             contentType: false,
@@ -43,20 +29,7 @@ $(document).ready(function () {
     });
 
     $("#clearButton").click(function () {
-        $.ajax({
-            url: "http://localhost:8080/clear/",
-            processData: false,
-            contentType: false,
-            data: null,
-            type: 'GET',
-            success: function (flag) {
-                console.log(flag);
-                location.href = '/';
-            },
-            error: function () {
-                alert("Clear 실패");
-            }
-        });
+        location.href = '/';
     });
 
     function constructTree(nodes) {

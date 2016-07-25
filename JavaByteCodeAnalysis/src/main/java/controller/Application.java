@@ -1,17 +1,7 @@
 package controller;
 
-import model.JBCClass;
-import model.JBCField;
-import model.JBCMethod;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-
-import java.util.Hashtable;
 
 /**
  * Created by LimSJ on 2016-07-06.

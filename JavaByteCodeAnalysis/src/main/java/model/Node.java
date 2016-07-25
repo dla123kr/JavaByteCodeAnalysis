@@ -55,6 +55,10 @@ public class Node {
         return parentName;
     }
 
+    /**
+     * 자동으로 부모와 자식을 연결해줌
+     * @param parentName
+     */
     public void setParent(String parentName) {
         // HandleJBC.getStaticNodes()에서 부모 찾자 !
         // 부모쪽에겐 자식 추가, 자식에겐 부모 찾아서 setParent(Node)
@@ -92,6 +96,10 @@ public class Node {
         }
     }
 
+    /**
+     * 직접 사용할 때에는, 부모만 지정해주므로 부모->자식은 따로 연결해줘야함
+     * @param parent
+     */
     public void setParent(Node parent) {
         if (parent != null) {
             this.parent = parent;

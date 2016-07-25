@@ -1,19 +1,12 @@
 package controller;
 
 import function.HandleJBC;
-import function.StaticDatas;
-import javassist.*;
 import javassist.bytecode.*;
-import model.JBCClass;
-import model.JBCField;
-import model.JBCMethod;
 import model.Node;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.annotation.MultipartConfig;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;

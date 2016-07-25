@@ -2,12 +2,8 @@ package function;
 
 import javassist.*;
 import javassist.bytecode.ClassFile;
-import javassist.bytecode.analysis.ControlFlow;
-import javassist.expr.ExprEditor;
-import javassist.expr.MethodCall;
 import model.*;
 import org.apache.log4j.Logger;
-import util.NodeType;
 
 import java.util.*;
 
@@ -33,20 +29,20 @@ public class HandleJBC {
         CtConstructor[] ctConstructors = ctClass.getDeclaredConstructors();
         CtMethod[] ctMethods = ctClass.getDeclaredMethods();
 
-        _JBCClass jbcClass = new _JBCClass(ctClass.getSimpleName(), ctClass.getPackageName());
+        JBCClass jbcClass = new JBCClass(ctClass.getSimpleName(), ctClass.getPackageName());
         jbcClass.setIsLoaded(true);
         jbcClass.setSuperClassName(classFile.getSuperclass());
         Collections.addAll(jbcClass.getInterfaceNames(), classFile.getInterfaces());
 
         for (CtField ctField : ctFields) {
-            _JBCField jbcField = new _JBCField(ctField.getName(), jbcClass);
+            JBCField jbcField = new JBCField(ctField.getName(), jbcClass);
 
             jbcField.setAccessModifier(ctField.getModifiers());
             jbcField.setReturnType(ctField.getSignature(), false);
         }
 
         for (CtConstructor ctConstructor : ctConstructors) {
-            _JBCMethod jbcMethod = new _JBCMethod(ctConstructor.getName(), jbcClass);
+            JBCMethod jbcMethod = new JBCMethod(ctConstructor.getName(), jbcClass);
 
             jbcMethod.setAccessModifier(ctConstructor.getModifiers());
 
@@ -55,7 +51,7 @@ public class HandleJBC {
         }
 
         for (CtMethod ctMethod : ctMethods) {
-            _JBCMethod jbcMethod = new _JBCMethod(ctMethod.getName(), jbcClass);
+            JBCMethod jbcMethod = new JBCMethod(ctMethod.getName(), jbcClass);
 
             jbcMethod.setAccessModifier(ctMethod.getModifiers());
             jbcMethod.setReturnType(ctMethod.getSignature(), true);
@@ -76,38 +72,38 @@ public class HandleJBC {
             // 함수 찾자
             String name = splitted[0];
 
+            JBCMethod jbcMethod = null;
             for (int i = 0; i < parent.getChildren().size(); i++) {
                 if (name.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Method")) {
-                    // 찾음
-                    _JBCMethod methodNode = (_JBCMethod) parent.getChildren().get(i);
-                    methodNode.setCalledCount(methodNode.getCalledCount() + 1);
+                    jbcMethod = (JBCMethod) parent.getChildren().get(i);
+                    jbcMethod.setCalledCount(jbcMethod.getCalledCount() + 1);
                     return;
                 }
             }
 
             // 못 찾음
-            _JBCMethod jbcMethod = new _JBCMethod(name, parent);
+            jbcMethod = new JBCMethod(name, parent);
             jbcMethod.setCalledCount(1);
         } else if (splitted.length == 2) {
             // 클래스 찾자
             String className = splitted[0];
             String methodName = splitted[1];
 
+            JBCClass jbcClass = null;
             for (int i = 0; i < parent.getChildren().size(); i++) {
                 if (className.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Class")) {
-                    _JBCClass classNode = (_JBCClass) parent.getChildren().get(i);
-                    recursiveFindMethod(indexes.substring(className.length() + 1), classNode);
+                    jbcClass = (JBCClass) parent.getChildren().get(i);
+                    recursiveFindMethod(indexes.substring(className.length() + 1), jbcClass);
                     return;
                 }
             }
 
             // 못 찾음
-            _JBCClass jbcClass = null;
             if (parent.getName().equals("(default)"))
-                jbcClass = new _JBCClass(className, (String) null);
+                jbcClass = new JBCClass(className, (String) null);
             else
-                jbcClass = new _JBCClass(className, parent);
-            _JBCMethod jbcMethod = new _JBCMethod(methodName, jbcClass);
+                jbcClass = new JBCClass(className, parent);
+            JBCMethod jbcMethod = new JBCMethod(methodName, jbcClass);
             jbcMethod.setCalledCount(1);
         } else {
             // 패키지 찾자
@@ -160,14 +156,5 @@ public class HandleJBC {
 
         // call된 함수 다 처리했으니 tmp 비워주기
         tmpCalledMethods.clear();
-    }
-
-    public static void testUnLoaded() {
-        for (Map.Entry<String, JBCClass> entry : StaticDatas.getJBCClassHashtable().entrySet()) {
-            JBCClass jbcClass = entry.getValue();
-            if (!jbcClass.isLoaded()) {
-                log.info("unloaded: " + jbcClass.getClassLongName());
-            }
-        }
     }
 }

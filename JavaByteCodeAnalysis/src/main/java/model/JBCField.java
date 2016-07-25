@@ -1,45 +1,20 @@
 package model;
 
-public class JBCField {
-    private String inAnyClass;
-    private String fieldName;
-    private String accessModifier;
-    private String returnType;
+import util.NodeType;
 
-    public JBCField(String inAnyClass, String fieldName) {
-        this.inAnyClass = inAnyClass;
-        this.fieldName = fieldName;
+/**
+ * Created by LimSJ on 2016-07-19.
+ */
+public class JBCField extends Node {
+
+    public JBCField(String name, Node parent) {
+        super(name);
+        this.setType(NodeType.FIELD);
+
+        this.setParent(parent);
+        if (parent != null)
+            parent.getChildren().add(this);
     }
 
-    public String getInAnyClass() {
-        return inAnyClass;
-    }
 
-    public void setInAnyClass(String inAnyClass) {
-        this.inAnyClass = inAnyClass;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public String getAccessModifier() {
-        return accessModifier;
-    }
-
-    public void setAccessModifier(String accessModifier) {
-        this.accessModifier = accessModifier;
-    }
-
-    public String getReturnType() {
-        return returnType;
-    }
-
-    public void setReturnType(String returnType) {
-        this.returnType = returnType;
-    }
 }
