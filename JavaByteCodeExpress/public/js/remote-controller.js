@@ -22,11 +22,19 @@ jui.ready(["ui.tree"], function (tree) {
                 if (node.index == null) {
                     this.uit.removeNodes();
 
+                    // loadedData에는 (default)와 각종 Package들이 있음
                     for (var i = 0; i < loadedData.length; i++) {
                         var node = loadedData[i];
 
                         this.append({isLoaded: true, type: "Package", name: node.name});
-                        this.append(i, {isLoaded: true, type: "Class", name: "#dump"});
+
+                        // (default)와 각종 Package안에 추가로 패키지가 있다면, #dump를 추가해서 +버튼을 만들자
+                        for (var j = 0; j < node.children.length; j++) {
+                            if (node.children[j].type == "Package") {
+                                packageTree.append(i, {isLoaded: true, type: "Class", name: "#dump"});
+                                break;
+                            }
+                        }
                     }
 
                     this.foldAll();
@@ -38,7 +46,7 @@ jui.ready(["ui.tree"], function (tree) {
                 }
 
                 if (node.data.type == "Package" && previousSelectIndex != node.index) {
-                    if (node.children[0].data.name == "#dump")
+                    if (node.children.length > 0 && node.children[0].data.name == "#dump")
                         this.open(node.index);
                     previousSelectIndex = node.index;
 
@@ -75,8 +83,9 @@ jui.ready(["ui.tree"], function (tree) {
                     for (var i = 1; i < mmin; i++)
                         closeIndex += "." + previousArr[i];
 
-                    if (this.get(closeIndex).data.type == "Package")
+                    if (this.get(closeIndex).data.type == "Package") {
                         this.fold(closeIndex);
+                    }
                 }
 
                 // 열리는 이번 index
@@ -102,14 +111,22 @@ jui.ready(["ui.tree"], function (tree) {
         }
     });
 
+    /**
+     * detailsTable에 추가할 node들을 분류
+     * @param index
+     * @returns {Array}
+     */
     function filterNode(index) {
         var splitted = index.split('.');
         var nodes = loadedData;
+
         for (var i = 0; i < splitted.length; i++) {
-            if (nodes == loadedData)
+            if (nodes == loadedData) {
                 nodes = nodes[splitted[i]];
-            else
-                nodes = nodes.children[splitted[i]];
+            }
+            else {
+                nodes = nodes.packages[splitted[i]];
+            }
         }
 
         var ret = [];
@@ -125,6 +142,10 @@ jui.ready(["ui.tree"], function (tree) {
         return ret;
     }
 
+    /**
+     * PackageTree에서 open되었을 때 실제 자식 Package들을 추가해준다.
+     * @param index 부모의 인덱스
+     */
     function addNode(index) {
         var splitted = index.split('.');
         var nodes = loadedData;
@@ -132,18 +153,18 @@ jui.ready(["ui.tree"], function (tree) {
             if (nodes == loadedData)
                 nodes = nodes[splitted[i]];
             else
-                nodes = nodes.children[splitted[i]];
+                nodes = nodes.packages[splitted[i]];
         }
 
-        for (var i = 0; i < nodes.children.length; i++) {
-            var node = nodes.children[i];
+        // 자식들 순회 중
+        for (var i = 0; i < nodes.packages.length; i++) {
+            var node = nodes.packages[i];
 
-            if (node.type == "Package") {
-                packageTree.append(index, {isLoaded: true, type: "Package", name: node.name});
+            packageTree.append(index, {isLoaded: true, type: "Package", name: node.name});
+
+            if (node.packages.length > 0) {
                 packageTree.append(index + "." + i.toString(), {isLoaded: true, type: "Class", name: "#dump"});
                 packageTree.fold(index + "." + i.toString());
-            } else if (node.type == "Class") {
-                packageTree.append(index, {isLoaded: node.isLoaded, type: "Class", name: node.name});
             }
         }
     }
