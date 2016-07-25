@@ -69,7 +69,7 @@ public class Node {
             for (int i = 0; i < packs.length; i++) {
                 isFind = false;
                 for (int j = 0; j < nodes.size(); j++) {
-                    if(nodes.get(j).getName().equals(packs[i])){
+                    if (nodes.get(j).getName().equals(packs[i])) {
                         parent = nodes.get(j);
                         nodes = parent.getChildren();
 
@@ -77,7 +77,7 @@ public class Node {
                         break;
                     }
                 }
-                if(!isFind){
+                if (!isFind) {
                     Node node = new Node(packs[i]);
                     node.setParent(parent);
                     nodes.add(node);
@@ -104,6 +104,28 @@ public class Node {
 
     public ArrayList<Node> getChildren() {
         return children;
+    }
+
+    public ArrayList<Node> getPackages() {
+        ArrayList<Node> ret = new ArrayList<>();
+
+        for (Node child : children) {
+            if (child.getType().equals("Package"))
+                ret.add(child);
+        }
+
+        return ret;
+    }
+
+    public ArrayList<Node> getClasses() {
+        ArrayList<Node> ret = new ArrayList<>();
+
+        for (Node child : children) {
+            if (child.getType().equals("Class"))
+                ret.add(child);
+        }
+
+        return ret;
     }
 
     public String getName() {
