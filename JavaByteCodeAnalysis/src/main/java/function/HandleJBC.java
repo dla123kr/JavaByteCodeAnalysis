@@ -16,9 +16,18 @@ public class HandleJBC {
     public static ArrayList<String> tmpCalledMethods = new ArrayList<>();
 
     private static ArrayList<Node> staticNodes = new ArrayList<>();
+    private static Hashtable<String, ArrayList<Node>> allNodesSet = new Hashtable<>();
+
+    public static void newStaticNodes() {
+        staticNodes = new ArrayList<>();
+    }
 
     public static ArrayList<Node> getStaticNodes() {
         return staticNodes;
+    }
+
+    public static Hashtable<String, ArrayList<Node>> getAllNodesSet() {
+        return allNodesSet;
     }
 
     public static void addNode(ClassFile classFile) {

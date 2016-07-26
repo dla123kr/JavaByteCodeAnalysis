@@ -1,6 +1,24 @@
 $(document).ready(function () {
 
-    var isFirstLoad = true;
+    var hash = $("#hiddenHash").val();
+
+    $.ajax({
+        url: "http://192.168.0.203:8080/index?hash=" + hash,
+        processData: false,
+        contentType: false,
+        data: hash,
+        type: "GET",
+        success: function (result) {
+            console.log("hash 건네기 성공");
+            console.log(result);
+            constructTab(result);
+            loadingModal.hide();
+        },
+        error: function () {
+            console.log(this.data);
+            console.log("hash 건네기 실패");
+        }
+    });
 
     $("#uploadButton").click(function () {
         var form = $('form')[0];
@@ -9,7 +27,7 @@ $(document).ready(function () {
         $("#uploadButton").attr('disabled', true);
 
         $.ajax({
-            url: "http://localhost:8080/",
+            url: "http://192.168.0.203:8080/fileUpload",
             processData: false,
             contentType: false,
             data: formData,
@@ -29,8 +47,26 @@ $(document).ready(function () {
     });
 
     $("#clearButton").click(function () {
-        location.href = '/';
+        $.ajax({
+            url: "http://192.168.0.203:8080/clear?hash=" + hash,
+            type: "GET",
+            success: function () {
+                console.log("clear 성공");
+                location.href = '/';
+            },
+            error: function () {
+                console.log("clear 실패");
+            }
+        });
     });
+
+    function constructTab(nodes) {
+        if (!nodes) return;
+
+        loadedData = nodes;
+        constructTables(loadedData);
+        constructTree(loadedData);
+    }
 
     function constructTree(nodes) {
         packageTree.uit.removeNodes();
@@ -55,12 +91,6 @@ $(document).ready(function () {
     }
 
     function constructTables(classes) {
-        if (isFirstLoad) {
-            $("#content-main").css("visibility", "visible");
-
-            isFirstLoad = false;
-        }
-
         // 업데이트를 하자
         detailsTable.update(classes);
     };

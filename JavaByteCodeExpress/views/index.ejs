@@ -26,6 +26,8 @@
     <script src="/js/details-table.js"></script>
     <script src="/js/topology.js"></script>
     <script src="/js/remote-controller.js"></script>
+    <!--<script src="/js/project-tab.js"></script>-->
+    <script src="/js/loading-modal.js"></script>
 </head>
 <body class="jui">
 
@@ -41,20 +43,42 @@
     </div>
 </header>
 
-<section class="horizontal-main">
-    <p class="vertical-main">
-    <div class="h2" style="margin-bottom:10px;">분석할 파일을 선택하세요.
-        <small>*.class, *.jar</small>
+<div id="loading_modal" class="msgbox" style="display: none;">
+    <div class="head">
+        알림
     </div>
-    <form id="frmUpload" method="post" enctype="multipart/form-data">
-        <input type="file" style="cursor: pointer;" name="uploadFile" multiple accept=".class, .jar"/>
-        <input type="button" id="uploadButton" class="btn focus" value="Load"/>
-        <input type="button" id="clearButton" class="btn" value="Clear"/>
-    </form>
-    </p>
-    <hr/>
+    <div class="body">
+        기존의 데이터를 불러오는 중입니다.
+    </div>
+</div>
 
-    <div id="content-main" style="visibility: collapse;">
+<section class="horizontal-main">
+
+    <!--<div id="css-project-tab">-->
+    <!--<ul id="project-tab" class="tab top">-->
+    <!--<li class="active"><a href="#" style="width: 50px;">0</a></li>-->
+    <!--<span id="btn_add_project" class="btn focus" style="float: left; margin-top: 4px;" onclick="insertTab()"><i class="icon-plus"></i></span>-->
+    <!--<span id="btn_clear_project" class="btn" style="float: right; margin-top: 4px;" onclick="alert(1)"><i class="icon-trashcan"></i></span>-->
+    <!--</ul>-->
+    <!--</div>-->
+
+    <div class="vertical-main">
+        <!--<div class="h1" style="margin-bottom: 10px; font-style: italic; font-weight: bold;">Project # <span-->
+        <!--id="project_num">0</span></div>-->
+        <div class="h2" style="margin-bottom:10px;">분석할 파일을 선택하세요.
+            <small>*.class, *.jar</small>
+        </div>
+        <form id="frmUpload" method="post" enctype="multipart/form-data">
+            <input type="file" style="cursor: pointer;" name="uploadFile" multiple accept=".class, .jar"/>
+            <input type="button" id="uploadButton" class="btn focus" value="Load"/>
+            <input type="button" id="clearButton" class="btn" value="Clear"/>
+            <input id="hiddenHash" name="hiddenHash" type="hidden" value="<%= hash %>"/>
+        </form>
+        <br/>
+        <hr/>
+    </div>
+
+    <div id="content-main">
 
         <p>
         <div id="remote-controller" class="window" style="text-align: left;">
@@ -80,7 +104,10 @@
 
         <p>
         <div style="margin-right: 880px;">
-            <button id="btn-home" style="margin-bottom: 20px; width: 30px; height: 30px;"><i class="icon-home"></i></button><button id="btn-up" style="margin-bottom: 20px; swidth: 30px; height: 30px; ;"><i class="icon-arrow3"></i></button>
+            <button id="btn-home" style="margin-bottom: 20px; width: 30px; height: 30px;"><i class="icon-home"></i>
+            </button>
+            <button id="btn-up" style="margin-bottom: 20px; swidth: 30px; height: 30px; ;"><i class="icon-arrow3"></i>
+            </button>
             <div id="switch-tree" class="switch inner" style="margin-bottom: 0px;"></div>
         </div>
         <table id="details-table" class="table expand">
@@ -313,3 +340,20 @@
             <ul></ul>
     </li>
 </script>
+
+<!-- project-tab의 template -->
+<!--<script data-jui="#project-tab" data-tpl="node" type="text/template">-->
+<!--<! if (num == "0") { !>-->
+<!--<li class="active"><a href="#" style="width: 50px;">0</a>-->
+<!--<! } else { !>-->
+<!--<li>-->
+<!--<a href="#">-->
+<!--<div class="row">-->
+<!--<div class="col"><!= num !></div>-->
+<!--<div class="col" style="margin-left: 30px; font-size:10px; color: red; cursor: pointer;"-->
+<!--onclick="removeTab(this.parentElement.innerText)"><i class="icon-close"></i></div>-->
+<!--</div>-->
+<!--</a>-->
+<!--<! } !>-->
+<!--</li>-->
+<!--</script>-->

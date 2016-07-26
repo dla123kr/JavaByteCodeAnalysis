@@ -16,14 +16,14 @@ import java.util.zip.ZipInputStream;
  * Created by LimSJ on 2016-07-08.
  */
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://192.168.0.203:3000")
 public class FileUploadController {
 
     private static Logger log = Logger.getLogger(FileUploadController.class);
 
-    @RequestMapping(path = "/", method = RequestMethod.POST)
-    public ArrayList<Node> fileUpload(@RequestParam("uploadFile") MultipartFile[] files) {
-        HandleJBC.getStaticNodes().clear();
+    @RequestMapping(path = "/fileUpload", method = RequestMethod.POST)
+    public ArrayList<Node> fileUpload(@RequestParam("uploadFile") MultipartFile[] files, @RequestParam("hiddenHash") String hash) {
+        HandleJBC.newStaticNodes();
         HandleJBC.getStaticNodes().add(new Node("(default)"));
 
         BufferedInputStream bis = null;
@@ -83,6 +83,8 @@ public class FileUploadController {
         HandleJBC.countingMethodCall();
 
         log.info("node셋팅 완료, JSON전송 전");
+        HandleJBC.getAllNodesSet().put(hash, HandleJBC.getStaticNodes());
+
         return HandleJBC.getStaticNodes();
     }
 
