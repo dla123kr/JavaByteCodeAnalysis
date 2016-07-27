@@ -12,7 +12,10 @@ jui.ready(["grid.table"], function (table) {
             },
             click: function (row, e) {
                 if (row.data.type == "Class") {
-                    this.showExpand(row.index);
+                    if(this.getExpand() != null && this.getExpand().index == row.index)
+                        this.hideExpand(row.index);
+                    else
+                        this.showExpand(row.index);
                 } else if (row.data.type == "Package") {
                     var treeIndex = packageTree.activeIndex();
                     var index = "";
