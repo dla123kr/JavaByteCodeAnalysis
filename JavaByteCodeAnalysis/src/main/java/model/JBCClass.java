@@ -4,9 +4,6 @@ import util.NodeType;
 
 import java.util.ArrayList;
 
-/**
- * Created by LimSJ on 2016-07-19.
- */
 public class JBCClass extends Node {
 
     private boolean isLoaded = false;

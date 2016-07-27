@@ -1,5 +1,5 @@
 jui.ready(["grid.table"], function (table) {
-    detailsTable = table("#details-table", {
+    detailsTable = table("#details_table", {
         event: {
             expand: function (row, e) {
                 $(row.list[0]).html("<i class='icon-right'></i>");

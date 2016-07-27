@@ -12,9 +12,6 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-/**
- * Created by LimSJ on 2016-07-08.
- */
 @RestController
 @CrossOrigin(origins = "http://192.168.0.203:3000")
 public class FileUploadController {
@@ -79,7 +76,6 @@ public class FileUploadController {
             }
         }
 
-        // TODO: 2016-07-19 함수콜 세자
         HandleJBC.countingMethodCall();
 
         log.info("node셋팅 완료, JSON전송 전");

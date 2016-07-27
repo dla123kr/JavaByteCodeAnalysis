@@ -12,9 +12,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
-/**
- * Created by LimSJ on 2016-07-19.
- */
 public class JBCMethod extends Node {
 
     private static final Logger log = Logger.getLogger(JBCMethod.class);

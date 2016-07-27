@@ -4,14 +4,8 @@ import function.HandleJBC;
 import model.Node;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
-import util.Pair;
-
-import java.util.AbstractMap;
 import java.util.ArrayList;
 
-/**
- * Created by LimSJ on 2016-07-25.
- */
 @RestController
 @CrossOrigin(origins = "http://192.168.0.203:3000")
 public class IndexController {
@@ -19,7 +13,7 @@ public class IndexController {
 
     /**
      * 처음 접속 시 table에 생성해주고 null 반환
-     * 아닌 경우 0번째 리턴
+     * 아닌 경우 값 리턴
      *
      * @param hash
      * @return
@@ -30,9 +24,11 @@ public class IndexController {
             ArrayList<Node> nodes = new ArrayList<>();
 
             HandleJBC.getAllNodesSet().put(hash, nodes);
+            log.info("새로운 쿠키 생성 : " + hash);
             return null;
         }
 
+        log.info("입장 : " + hash);
         return HandleJBC.getAllNodesSet().get(hash);
     }
 }

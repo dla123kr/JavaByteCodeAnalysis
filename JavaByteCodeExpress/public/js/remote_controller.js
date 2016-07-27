@@ -1,5 +1,5 @@
 jui.ready(["ui.window"], function (win) {
-    remoteController = win("#remote-controller", {
+    remoteController = win("#remote_controller", {
         width: 300,
         height: 300,
         left: "3%",

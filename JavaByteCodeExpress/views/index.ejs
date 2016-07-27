@@ -23,11 +23,11 @@
     <script>
     </script>
     <script src="/js/controller.js"></script>
-    <script src="/js/details-table.js"></script>
+    <script src="/js/details_table.js"></script>
     <script src="/js/topology.js"></script>
-    <script src="/js/remote-controller.js"></script>
+    <script src="/js/remote_controller.js"></script>
     <!--<script src="/js/project-tab.js"></script>-->
-    <script src="/js/loading-modal.js"></script>
+    <script src="/js/loading_modal.js"></script>
 </head>
 <body class="jui">
 
@@ -48,7 +48,7 @@
         알림
     </div>
     <div class="body">
-        기존의 데이터를 불러오는 중입니다.
+        기존의 데이터를 불러오는 중입니다... <i class="icon-loading spin" style="font-size: 20px;"></i>
     </div>
 </div>
 
@@ -81,7 +81,7 @@
     <div id="content-main">
 
         <p>
-        <div id="remote-controller" class="window" style="text-align: left;">
+        <div id="remote_controller" class="window" style="text-align: left;">
             <div class="head">
                 <div class="left">Package Tree</div>
                 <div class="right">
@@ -110,7 +110,7 @@
             </button>
             <div id="switch-tree" class="switch inner" style="margin-bottom: 0px;"></div>
         </div>
-        <table id="details-table" class="table expand">
+        <table id="details_table" class="table expand">
             <thead>
             <tr>
                 <th style="width: 30px;"></th>
@@ -127,8 +127,8 @@
 
 <!--**********************************************************************************************************************-->
 
-<!-- details-table의 template -->
-<script data-jui="#details-table" data-tpl="row" type="text/template">
+<!-- details_table의 template -->
+<script data-jui="#details_table" data-tpl="row" type="text/template">
     <tr>
         <! if(type == "Package") { !>
         <td><i class="icon-document"></i></td>
@@ -144,7 +144,7 @@
     </tr>
 </script>
 
-<script data-jui="#details-table" data-tpl="expand" type="text/template">
+<script data-jui="#details_table" data-tpl="expand" type="text/template">
     <div class="row">
         <div class="group">
             <span class="h1">

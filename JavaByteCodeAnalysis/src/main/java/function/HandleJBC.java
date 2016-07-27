@@ -7,9 +7,6 @@ import org.apache.log4j.Logger;
 
 import java.util.*;
 
-/**
- * Created by LimSJ on 2016-07-08.
- */
 public class HandleJBC {
 
     private static final Logger log = Logger.getLogger(HandleJBC.class);

@@ -6,9 +6,6 @@ import util.NodeType;
 
 import java.util.ArrayList;
 
-/**
- * Created by LimSJ on 2016-07-19.
- */
 public class Node {
     private int type;
     private String parentName = null;
