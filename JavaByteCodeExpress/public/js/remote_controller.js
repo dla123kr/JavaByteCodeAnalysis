@@ -19,6 +19,9 @@ jui.ready(["ui.tree"], function (tree) {
         root: {isLoaded: true, type: "Package", name: "All"},
         event: {
             select: function (node) {
+                if (detailsTable.activeIndex() != null)
+                    detailsTable.unselect();
+
                 if (node.index == null) {
                     this.uit.removeNodes();
 
@@ -58,6 +61,9 @@ jui.ready(["ui.tree"], function (tree) {
                 }
             },
             open: function (node) {
+                if (detailsTable.activeIndex() != null)
+                    detailsTable.unselect();
+
                 if (node.index == null) {
                     previousOpenIndex = "-1";
                     previousSelectIndex = "-1";
@@ -174,8 +180,7 @@ jui.ready(["ui.switch"], function (button) {
     switchTree = button("#switch-tree", {
         checked: true
     });
-
-
+    
     $("#switch-tree").click(function () {
         if (!switchTree.getValue()) {
             remoteController.hide();

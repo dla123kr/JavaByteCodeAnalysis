@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    var hash = $("#hiddenHash").val();
+    hash = $("#hiddenHash").val();
 
     $.ajax({
         url: "http://192.168.0.203:8080/index?hash=" + hash,

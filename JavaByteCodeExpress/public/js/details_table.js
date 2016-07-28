@@ -1,4 +1,52 @@
-jui.ready(["grid.table"], function (table) {
+jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
+
+    var dd = dropdown("#details_table_dd", {
+        event: {
+            change: function (data) {
+                if (data.text == "View Topology") {
+                    // topologyModal 위치
+                    topologyModal.show();
+                    if(oriTopologyModalHeight == null)
+                        oriTopologyModalHeight = parseInt($("#topology_modal").css("top"));
+                    $("#topology_modal").css("top", oriTopologyModalHeight + $(document).scrollTop());
+                    $("#topology_modal_body").height($("#topology_modal").height() - 65);
+
+                    topologyLoadingModal.show();
+                    // ajax로 데이터 요청
+                    var name = ($("#selected_name").html()).split(' ')[2];
+                    $.ajax({
+                        url: "http://192.168.0.203:8080/viewTopology?hash=" + hash + "&name=" + name + "&depth=" + 3,
+                        type: "GET",
+                        success: function (result) {
+                            console.log("viewTopology 성공");
+
+                            result[0] = {
+                                key: result[0].key,
+                                name: result[0].name,
+                                type: result[0].type,
+                                x: chartWidth / 2,
+                                y: chartHeight / 2,
+                                outgoing: result[0].outgoing,
+                                calledCount: result[0].calledCount
+                            };
+
+                            initTopology(result);
+                        },
+                        error: function () {
+                            console.log("viewTopology 에러");
+                            initTopology(null);
+                        },
+                        complete: function () {
+                            topologyLoadingModal.hide();
+                        }
+                    });
+
+                    //
+                }
+            }
+        }
+    });
+
     detailsTable = table("#details_table", {
         event: {
             expand: function (row, e) {
@@ -11,8 +59,11 @@ jui.ready(["grid.table"], function (table) {
                     $(row.list[0]).html("<i class='icon-left'></i>");
             },
             click: function (row, e) {
+                if (this.activeIndex() != null)
+                    this.unselect();
+
                 if (row.data.type == "Class") {
-                    if(this.getExpand() != null && this.getExpand().index == row.index)
+                    if (this.getExpand() != null && this.getExpand().index == row.index)
                         this.hideExpand(row.index);
                     else
                         this.showExpand(row.index);
@@ -30,8 +81,7 @@ jui.ready(["grid.table"], function (table) {
                             }
                         }
 
-                        index = treeIndex + "." + packIndex;
-                        console.log(index);
+                        index = treeIndex + "." + packIndex;initTopology();
                     }
 
                     var node = packageTree.get(index);
@@ -46,12 +96,28 @@ jui.ready(["grid.table"], function (table) {
 
                     packageTree.select(node.index);
                 }
+            },
+            rowmenu: function (row, e) {
+                var icon;
+                if (row.data.type == "Package")
+                    icon = "<i class='icon-document'></i> "
+                else if (row.data.type == "Class")
+                    icon = "<i class='icon-script'></i> "
+
+                this.select(row.index);
+                $("#selected_name").html(icon + row.data.longName);
+                dd.move(e.pageX, e.pageY);
+                dd.show();
             }
         },
         expand: true,
         expandEvent: false,
         animate: true
     });
+
+    function filterViewTopology(data) {
+
+    }
 
     function filterNode(index) {
         var splitted = index.split('.');
@@ -80,6 +146,9 @@ jui.ready(["grid.table"], function (table) {
     }
 
     $("#btn-home").click(function () {
+        if (detailsTable.activeIndex() != null)
+            detailsTable.unselect();
+
         packageTree.uit.removeNodes();
 
         // loadedData에는 (default)와 각종 Package들이 있음
@@ -101,6 +170,9 @@ jui.ready(["grid.table"], function (table) {
     });
 
     $("#btn-up").click(function () {
+        if (detailsTable.activeIndex() != null)
+            detailsTable.unselect();
+
         var treeIndex = packageTree.activeIndex();
         if (treeIndex == null || treeIndex == undefined)
             return;
@@ -112,7 +184,6 @@ jui.ready(["grid.table"], function (table) {
             var suffix = splitted[splitted.length - 1];
             var index = treeIndex.substring(0, treeIndex.length - suffix.length - 1);
 
-            console.log(index);
             var node = packageTree.get(index);
             var datas = filterNode(node.index);
             detailsTable.update(datas);

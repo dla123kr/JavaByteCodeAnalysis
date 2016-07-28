@@ -24,10 +24,11 @@
     </script>
     <script src="/js/controller.js"></script>
     <script src="/js/details_table.js"></script>
-    <script src="/js/topology.js"></script>
     <script src="/js/remote_controller.js"></script>
     <!--<script src="/js/project-tab.js"></script>-->
     <script src="/js/loading_modal.js"></script>
+    <script src="/js/topology_modal.js"></script>
+    <script src="/js/topology.js"></script>
 </head>
 <body class="jui">
 
@@ -48,8 +49,24 @@
         알림
     </div>
     <div class="body">
-        기존의 데이터를 불러오는 중입니다... <i class="icon-loading spin" style="font-size: 20px;"></i>
+        데이터를 불러오는 중입니다... <i class="icon-loading spin" style="font-size: 20px;"></i>
     </div>
+</div>
+
+<div id="topology_modal" class="msgbox" style="display: none; width: 1500px; height: 850px;">
+    <div id="topology_modal_head" class="head">
+        Topology
+
+    </div>
+    <div id="topology_modal_body" class="body">
+        <div id="topology" style="width: 1480px; height: 785px">
+
+        </div>
+    </div>
+</div>
+
+<div id="topology_loading_modal" style="display: none; font-size: 20px;">
+    NOW LOADING... <i class="icon-loading spin" style="font-size: 20px;"></i>
 </div>
 
 <section class="horizontal-main">
@@ -110,6 +127,7 @@
             </button>
             <div id="switch-tree" class="switch inner" style="margin-bottom: 0px;"></div>
         </div>
+
         <table id="details_table" class="table expand">
             <thead>
             <tr>
@@ -119,6 +137,18 @@
             </thead>
             <tbody></tbody>
         </table>
+
+        <!-- dropdown -->
+        <div id="details_table_dd" class="dropdown large">
+            <ul style="width: 300px;">
+                <span id="selected_name">null</span>
+                <li class="divider"></li>
+                <li>View Topology</li>
+                <li>메뉴2</li>
+                <li>메뉴3</li>
+            </ul>
+        </div>
+
         </p>
     </div>
 </section>

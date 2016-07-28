@@ -6,6 +6,11 @@ jui.ready(["ui.modal"], function (modal) {
         autoHide: false
         
     });
-
     loadingModal.show();
+
+    topologyLoadingModal = modal("#topology_loading_modal", {
+        target: "#topology_modal",
+        color: "white",
+        autoHide: false
+    });
 });
