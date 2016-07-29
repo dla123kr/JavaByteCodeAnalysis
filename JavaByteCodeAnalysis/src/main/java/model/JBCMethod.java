@@ -16,12 +16,16 @@ public class JBCMethod extends Node {
 
     private static final Logger log = Logger.getLogger(JBCMethod.class);
 
+    private HandleJBC handleJBC = null;
+
     private ArrayList<String> parameters = new ArrayList<>();
     private int calledCount;
     private ArrayList<String> calledMethods = new ArrayList<>();
 
-    public JBCMethod(String name, Node parent) {
+    public JBCMethod(HandleJBC handleJBC, String name, Node parent) {
         super(name);
+        this.handleJBC = handleJBC;
+
         this.setType(NodeType.METHOD);
         this.calledCount = 0;
 
@@ -107,7 +111,7 @@ public class JBCMethod extends Node {
                         public void edit(MethodCall m) {
                             String methodName = m.getClassName() + "." + m.getMethodName();
                             methods.add(methodName);
-                            HandleJBC.tmpCalledMethods.add(methodName);
+                            handleJBC.tmpCalledMethods.add(methodName);
                         }
                     }
             );

@@ -68,6 +68,8 @@ jui.ready(null, function () {
                         return "/images/public.png";
                     } else if (data.type == "protected") {
                         return "/images/protected.png";
+                    } else if (data.type == "private") {
+                        return "/images/private.png";
                     } else if (data.type == "class") {
                         return "/images/class.png";
                     } else if (data.type == "package") {

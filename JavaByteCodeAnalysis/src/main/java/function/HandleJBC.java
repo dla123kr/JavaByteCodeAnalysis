@@ -10,16 +10,12 @@ import java.util.*;
 public class HandleJBC {
 
     private static final Logger log = Logger.getLogger(HandleJBC.class);
-    public static ArrayList<String> tmpCalledMethods = new ArrayList<>();
+    public ArrayList<String> tmpCalledMethods = new ArrayList<>();
 
-    private static ArrayList<Node> staticNodes = new ArrayList<>();
+    private ArrayList<Node> staticNodes = new ArrayList<>();
     private static Hashtable<String, ArrayList<Node>> allNodesSet = new Hashtable<>();
 
-    public static void newStaticNodes() {
-        staticNodes = new ArrayList<>();
-    }
-
-    public static ArrayList<Node> getStaticNodes() {
+    public ArrayList<Node> getStaticNodes() {
         return staticNodes;
     }
 
@@ -27,7 +23,7 @@ public class HandleJBC {
         return allNodesSet;
     }
 
-    public static void addNode(ClassFile classFile) {
+    public void addNode(ClassFile classFile) {
         ClassPool classPool = ClassPool.getDefault();
 
         CtClass ctClass = classPool.makeClass(classFile);
@@ -35,7 +31,7 @@ public class HandleJBC {
         CtConstructor[] ctConstructors = ctClass.getDeclaredConstructors();
         CtMethod[] ctMethods = ctClass.getDeclaredMethods();
 
-        JBCClass jbcClass = new JBCClass(ctClass.getSimpleName(), ctClass.getPackageName());
+        JBCClass jbcClass = new JBCClass(this, ctClass.getSimpleName(), ctClass.getPackageName());
         jbcClass.setIsLoaded(true);
         jbcClass.setSuperClassName(classFile.getSuperclass());
         Collections.addAll(jbcClass.getInterfaceNames(), classFile.getInterfaces());
@@ -48,7 +44,7 @@ public class HandleJBC {
         }
 
         for (CtConstructor ctConstructor : ctConstructors) {
-            JBCMethod jbcMethod = new JBCMethod(ctConstructor.getName(), jbcClass);
+            JBCMethod jbcMethod = new JBCMethod(this, ctConstructor.getName(), jbcClass);
 
             jbcMethod.setAccessModifier(ctConstructor.getModifiers());
 
@@ -57,7 +53,7 @@ public class HandleJBC {
         }
 
         for (CtMethod ctMethod : ctMethods) {
-            JBCMethod jbcMethod = new JBCMethod(ctMethod.getName(), jbcClass);
+            JBCMethod jbcMethod = new JBCMethod(this, ctMethod.getName(), jbcClass);
 
             jbcMethod.setAccessModifier(ctMethod.getModifiers());
             jbcMethod.setReturnType(ctMethod.getSignature(), true);
@@ -71,7 +67,7 @@ public class HandleJBC {
     // 기존에 있는 클래스 + 있는 함수면 calledCount++
     // 기존에 있는 클래스 + 없는 함수면 SuperClass의 것. 1로 초기화해주고 추가
     // 기존에 없는 클래스면 추가 !
-    private static void recursiveFindMethod(String indexes, Node parent) {
+    private void recursiveFindMethod(String indexes, Node parent) {
         String[] splitted = indexes.split("\\.");
 
         if (splitted.length == 1) {
@@ -88,7 +84,7 @@ public class HandleJBC {
             }
 
             // 못 찾음
-            jbcMethod = new JBCMethod(name, parent);
+            jbcMethod = new JBCMethod(this, name, parent);
             jbcMethod.setCalledCount(1);
         } else if (splitted.length == 2) {
             // 클래스 찾자
@@ -106,10 +102,10 @@ public class HandleJBC {
 
             // 못 찾음
             if (parent.getName().equals("(default)"))
-                jbcClass = new JBCClass(className, (String) null);
+                jbcClass = new JBCClass(this, className, (String) null);
             else
                 jbcClass = new JBCClass(className, parent);
-            JBCMethod jbcMethod = new JBCMethod(methodName, jbcClass);
+            JBCMethod jbcMethod = new JBCMethod(this, methodName, jbcClass);
             jbcMethod.setCalledCount(1);
         } else {
             // 패키지 찾자
@@ -130,7 +126,7 @@ public class HandleJBC {
         }
     }
 
-    public static void countingMethodCall() {
+    public void countingMethodCall() {
         for (String str : tmpCalledMethods) {
             String[] splitted = str.split("\\."); // 패키지.패키지.패키지.클래스.함수이름
 

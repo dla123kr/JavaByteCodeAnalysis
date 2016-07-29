@@ -20,8 +20,8 @@ public class FileUploadController {
 
     @RequestMapping(path = "/fileUpload", method = RequestMethod.POST)
     public ArrayList<Node> fileUpload(@RequestParam("uploadFile") MultipartFile[] files, @RequestParam("hiddenHash") String hash) {
-        HandleJBC.newStaticNodes();
-        HandleJBC.getStaticNodes().add(new Node("(default)"));
+        HandleJBC handleJBC = new HandleJBC();
+        handleJBC.getStaticNodes().add(new Node("(default)"));
 
         BufferedInputStream bis = null;
         ClassFile classFile = null;
@@ -56,7 +56,7 @@ public class FileUploadController {
                 }
 
                 if (classFile != null) {
-                    HandleJBC.addNode(classFile);
+                    handleJBC.addNode(classFile);
                 }
             } else if (ext.equals("jar")) {
                 ZipInputStream zis = new ZipInputStream(bis);
@@ -65,7 +65,7 @@ public class FileUploadController {
                         if (!entry.isDirectory() && entry.getName().toLowerCase().endsWith(".class")) {
                             String className = entry.getName().replace('/', '.');
                             classFile = new ClassFile(new DataInputStream(zis));
-                            HandleJBC.addNode(classFile);
+                            handleJBC.addNode(classFile);
                             log.info(className);
                         }
                     }
@@ -76,12 +76,12 @@ public class FileUploadController {
             }
         }
 
-        HandleJBC.countingMethodCall();
+        handleJBC.countingMethodCall();
 
         log.info("node셋팅 완료, JSON전송 전");
-        HandleJBC.getAllNodesSet().put(hash, HandleJBC.getStaticNodes());
+        HandleJBC.getAllNodesSet().put(hash, handleJBC.getStaticNodes());
 
-        return HandleJBC.getStaticNodes();
+        return handleJBC.getStaticNodes();
     }
 
     /**

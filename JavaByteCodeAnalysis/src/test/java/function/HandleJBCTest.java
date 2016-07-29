@@ -29,8 +29,8 @@ public class HandleJBCTest {
      */
     @Test
     public void addNodeTest() throws Exception {
-        HandleJBC.getStaticNodes().clear();
-        HandleJBC.getStaticNodes().add(new Node("(default)"));
+        HandleJBC handleJBC = new HandleJBC();
+        handleJBC.getStaticNodes().add(new Node("(default)"));
 
         BufferedInputStream bis = null;
         ClassFile classFile = null;
@@ -41,32 +41,32 @@ public class HandleJBCTest {
             if (!entry.isDirectory() && entry.getName().toLowerCase().endsWith(".class")) {
                 String className = entry.getName().replace('/', '.');
                 classFile = new ClassFile(new DataInputStream(zis));
-                HandleJBC.addNode(classFile);
+                handleJBC.addNode(classFile);
             }
         }
-        HandleJBC.countingMethodCall();
+        handleJBC.countingMethodCall();
 
         // 테스트
-        classFileCountTest("com", new String[]{"jennifersoft", "data", "command", "agentinfo"}, 15);
-        classFileCountTest("com", new String[]{"jennifersoft", "data", "db", "migration"}, 10);
-        classFileCountTest("com", new String[]{"jennifersoft", "e"}, 7);
-        classFileCountTest("com", new String[]{"jennifersoft", "data", "useragent", "parser"}, 34);
-        classFileCountTest("com", new String[]{"jennifersoft", "data"}, 66);
-        classFileCountTest("org", new String[]{"json"}, 20);
-        classFileCountTest("jennifer", new String[]{"annotaion"}, 2);
-        classFileCountTest("jennifer", new String[]{"core"}, 35);
-        classFileCountTest("jennifer", new String[]{"core", "field"}, 29);
-        classFileCountTest("jennifer", new String[]{"lang", "util"}, 1);
-        classFileCountTest("jennifer", new String[]{"lang", "record"}, 44);
-        classFileCountTest("jennifer", new String[]{"version"}, 4);
-        classFileCountTest("jennifer", new String[]{"net", "packet"}, 3);
+        classFileCountTest(handleJBC, "com", new String[]{"jennifersoft", "data", "command", "agentinfo"}, 15);
+        classFileCountTest(handleJBC, "com", new String[]{"jennifersoft", "data", "db", "migration"}, 10);
+        classFileCountTest(handleJBC, "com", new String[]{"jennifersoft", "e"}, 7);
+        classFileCountTest(handleJBC, "com", new String[]{"jennifersoft", "data", "useragent", "parser"}, 34);
+        classFileCountTest(handleJBC, "com", new String[]{"jennifersoft", "data"}, 66);
+        classFileCountTest(handleJBC, "org", new String[]{"json"}, 20);
+        classFileCountTest(handleJBC, "jennifer", new String[]{"annotaion"}, 2);
+        classFileCountTest(handleJBC, "jennifer", new String[]{"core"}, 35);
+        classFileCountTest(handleJBC, "jennifer", new String[]{"core", "field"}, 29);
+        classFileCountTest(handleJBC, "jennifer", new String[]{"lang", "util"}, 1);
+        classFileCountTest(handleJBC, "jennifer", new String[]{"lang", "record"}, 44);
+        classFileCountTest(handleJBC, "jennifer", new String[]{"version"}, 4);
+        classFileCountTest(handleJBC, "jennifer", new String[]{"net", "packet"}, 3);
 
-        checkParentTest("com", new String[]{"jennifersoft"}, "com");
-        checkParentTest("com", new String[]{"jennifersoft", "b"}, "jennifersoft");
-        checkParentTest("com", new String[]{"jennifersoft", "data", "cache"}, "data");
-        checkParentTest("com", new String[]{"jennifersoft", "data", "cache", "CachedLong"}, "cache");
-        checkParentTest("org", new String[]{"json"}, "org");
-        checkParentTest("org", new String[]{"json", "JSONString"}, "json");
+        checkParentTest(handleJBC, "com", new String[]{"jennifersoft"}, "com");
+        checkParentTest(handleJBC, "com", new String[]{"jennifersoft", "b"}, "jennifersoft");
+        checkParentTest(handleJBC, "com", new String[]{"jennifersoft", "data", "cache"}, "data");
+        checkParentTest(handleJBC, "com", new String[]{"jennifersoft", "data", "cache", "CachedLong"}, "cache");
+        checkParentTest(handleJBC, "org", new String[]{"json"}, "org");
+        checkParentTest(handleJBC, "org", new String[]{"json", "JSONString"}, "json");
     }
 
     /**
@@ -76,12 +76,12 @@ public class HandleJBCTest {
      * @param paths    나머지 경로
      * @param expected 기대값
      */
-    private void classFileCountTest(String start, String[] paths, int expected) {
+    private void classFileCountTest(HandleJBC handleJBC, String start, String[] paths, int expected) {
         cnt = 0;
         ArrayList<String> packs = new ArrayList<>(Arrays.asList(paths));
-        for (int i = 1; i < HandleJBC.getStaticNodes().size(); i++) {
-            if (HandleJBC.getStaticNodes().get(i).getName().equals(start)) {
-                recursiveClassFileCount(HandleJBC.getStaticNodes().get(i), packs);
+        for (int i = 1; i < handleJBC.getStaticNodes().size(); i++) {
+            if (handleJBC.getStaticNodes().get(i).getName().equals(start)) {
+                recursiveClassFileCount(handleJBC.getStaticNodes().get(i), packs);
                 break;
             }
         }
@@ -112,12 +112,12 @@ public class HandleJBCTest {
      * @param paths    나머지 경로
      * @param expected 기대값
      */
-    private void checkParentTest(String start, String[] paths, String expected) {
+    private void checkParentTest(HandleJBC handleJBC, String start, String[] paths, String expected) {
         str = "";
         ArrayList<String> packs = new ArrayList<>(Arrays.asList(paths));
-        for (int i = 1; i < HandleJBC.getStaticNodes().size(); i++) {
-            if (HandleJBC.getStaticNodes().get(i).getName().equals(start)) {
-                recursiveCheckParent(HandleJBC.getStaticNodes().get(i), packs);
+        for (int i = 1; i < handleJBC.getStaticNodes().size(); i++) {
+            if (handleJBC.getStaticNodes().get(i).getName().equals(start)) {
+                recursiveCheckParent(handleJBC.getStaticNodes().get(i), packs);
                 break;
             }
         }

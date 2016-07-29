@@ -1,5 +1,6 @@
 package model;
 
+import function.HandleJBC;
 import util.NodeType;
 
 import java.util.ArrayList;
@@ -10,12 +11,12 @@ public class JBCClass extends Node {
     private String superClassName = null;
     private ArrayList<String> interfaceNames = new ArrayList<>();
 
-    public JBCClass(String name, String packName) {
+    public JBCClass(HandleJBC handleJBC, String name, String packName) {
         super(name);
         this.setType(NodeType.CLASS);
         this.isLoaded = false;
 
-        this.setParent(packName);
+        this.setParent(handleJBC, packName);
     }
 
     public JBCClass(String name, Node parent) {

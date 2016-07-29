@@ -56,16 +56,16 @@ public class Node {
      * 자동으로 부모와 자식을 연결해줌
      * @param parentName
      */
-    public void setParent(String parentName) {
+    public void setParent(HandleJBC handleJBC, String parentName) {
         // HandleJBC.getStaticNodes()에서 부모 찾자 !
         // 부모쪽에겐 자식 추가, 자식에겐 부모 찾아서 setParent(Node)
         if (parentName == null) {
-            HandleJBC.getStaticNodes().get(0).getChildren().add(this); // (default)
+            handleJBC.getStaticNodes().get(0).getChildren().add(this); // (default)
         } else {
             String[] packs = parentName.split("\\.");
 
             Node parent = null;
-            ArrayList<Node> nodes = HandleJBC.getStaticNodes();
+            ArrayList<Node> nodes = handleJBC.getStaticNodes();
             boolean isFind;
             for (int i = 0; i < packs.length; i++) {
                 isFind = false;
