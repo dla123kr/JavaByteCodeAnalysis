@@ -21,9 +21,12 @@ public class ViewTopologyController {
      * @return
      */
     @RequestMapping(path = "/viewTopology", method = RequestMethod.GET)
-    public ArrayList<TopologyNode> viewTopology(@RequestParam("hash") String hash, @RequestParam("name") String name, @RequestParam("depth") int depth) {
+    public ArrayList<TopologyNode> viewTopology(@RequestParam("hash") String hash, @RequestParam("name") String name,
+                                                @RequestParam("relation") String relation, @RequestParam("detail") String detail, @RequestParam("depth") int depth) {
         log.info("hash: " + hash);
         log.info("name: " + name);
+        log.info("relation: " + relation);
+        log.info("detail: " + detail);
         log.info("depth: " + depth);
 
         ArrayList<Node> nodes = HandleJBC.getAllNodesSet().get(hash);
