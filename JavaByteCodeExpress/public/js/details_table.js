@@ -6,7 +6,7 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                 if (data.text == "View Topology") {
                     // topologyModal 위치
                     topologyModal.show();
-                    if(oriTopologyModalHeight == null)
+                    if (oriTopologyModalHeight == null)
                         oriTopologyModalHeight = parseInt($("#topology_modal").css("top"));
                     $("#topology_modal").css("top", oriTopologyModalHeight + $(document).scrollTop());
                     $("#topology_modal_body").height($("#topology_modal").height() - 65);
@@ -19,15 +19,21 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
+                            var idx;
+                            for (idx = 0; idx < result.length; idx++) {
+                                if(result[idx].key == name)
+                                    break;
+                            }
 
-                            result[0] = {
-                                key: result[0].key,
-                                name: result[0].name,
-                                type: result[0].type,
+                            result[idx] = {
+                                key: result[idx].key,
+                                longName: result[0].longName,
+                                name: result[idx].name,
+                                type: result[idx].type,
                                 x: chartWidth / 2,
                                 y: chartHeight / 2,
-                                outgoing: result[0].outgoing,
-                                calledCount: result[0].calledCount
+                                outgoing: result[idx].outgoing,
+                                calledCount: result[idx].calledCount
                             };
 
                             initTopology(result);
@@ -81,7 +87,8 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                             }
                         }
 
-                        index = treeIndex + "." + packIndex;initTopology();
+                        index = treeIndex + "." + packIndex;
+                        initTopology();
                     }
 
                     var node = packageTree.get(index);

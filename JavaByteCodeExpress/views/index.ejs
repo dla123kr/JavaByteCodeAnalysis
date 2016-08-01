@@ -287,10 +287,6 @@
                                 methods[i].calledMethods.length; !>
                                 <td rowspan="<!= methodRowCount !>">
                                     <span><!= methods[i].name !></span>
-                                    <! if(isLoaded && methods[i].accessModifier == null && methods[i].returnType ==
-                                    null) { !>
-                                    <br/><span style="color: red;"><small>( Super )</small></span>
-                                    <! } !>
                                 </td>
                                 <td>Access Modifier</td>
                                 <td>
@@ -329,11 +325,11 @@
                             <! if (methods[i].calledMethods.length > 0) { !>
                             <tr>
                                 <td rowspan="<!= methods[i].calledMethods.length !>">Called Methods</td>
-                                <td><!= methods[i].calledMethods[0] !></td>
+                                <td><!= methods[i].calledMethods[0].name !></td>
                             </tr>
                             <! for (var j = 1; j < methods[i].calledMethods.length; j++) { !>
                             <tr>
-                                <td><!= methods[i].calledMethods[j] !></td>
+                                <td><!= methods[i].calledMethods[j].name !></td>
                             </tr>
                             <! } !>
                             <! } !>

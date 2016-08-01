@@ -18,9 +18,10 @@ public class JBCMethod extends Node {
 
     private HandleJBC handleJBC = null;
 
+    private String signature = null;
     private ArrayList<String> parameters = new ArrayList<>();
     private int calledCount;
-    private ArrayList<String> calledMethods = new ArrayList<>();
+    private ArrayList<CalledMethod> calledMethods = new ArrayList<>();
 
     public JBCMethod(HandleJBC handleJBC, String name, Node parent) {
         super(name);
@@ -42,8 +43,16 @@ public class JBCMethod extends Node {
         this.calledCount = calledCount;
     }
 
-    public ArrayList<String> getCalledMethods() {
+    public ArrayList<CalledMethod> getCalledMethods() {
         return calledMethods;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
     }
 
     public ArrayList<String> getParameters() {
@@ -51,6 +60,7 @@ public class JBCMethod extends Node {
     }
 
     public void setParameters(String desc) {
+        this.signature = desc;
         parameters.clear();
 
         StringTokenizer tokenizer = null;
@@ -103,15 +113,16 @@ public class JBCMethod extends Node {
 
     public void setCalledMethods(CtBehavior ct) {
         calledMethods.clear();
-        ArrayList<String> methods = new ArrayList<>();
-        try{
+        ArrayList<CalledMethod> methods = new ArrayList<>();
+        try {
             ct.instrument(
-                    new ExprEditor(){
+                    new ExprEditor() {
                         @Override
                         public void edit(MethodCall m) {
                             String methodName = m.getClassName() + "." + m.getMethodName();
-                            methods.add(methodName);
-                            handleJBC.tmpCalledMethods.add(methodName);
+                            CalledMethod cm = new CalledMethod(methodName, m.getSignature());
+                            methods.add(cm);
+                            handleJBC.tmpCalledMethods.add(cm);
                         }
                     }
             );

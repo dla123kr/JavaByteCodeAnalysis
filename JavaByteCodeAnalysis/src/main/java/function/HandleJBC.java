@@ -10,7 +10,7 @@ import java.util.*;
 public class HandleJBC {
 
     private static final Logger log = Logger.getLogger(HandleJBC.class);
-    public ArrayList<String> tmpCalledMethods = new ArrayList<>();
+    public ArrayList<CalledMethod> tmpCalledMethods = new ArrayList<>();
 
     private ArrayList<Node> staticNodes = new ArrayList<>();
     private static Hashtable<String, ArrayList<Node>> allNodesSet = new Hashtable<>();
@@ -67,7 +67,7 @@ public class HandleJBC {
     // 기존에 있는 클래스 + 있는 함수면 calledCount++
     // 기존에 있는 클래스 + 없는 함수면 SuperClass의 것. 1로 초기화해주고 추가
     // 기존에 없는 클래스면 추가 !
-    private void recursiveFindMethod(String indexes, Node parent) {
+    private void recursiveFindMethod(String indexes, Node parent, CalledMethod calledMethod) {
         String[] splitted = indexes.split("\\.");
 
         if (splitted.length == 1) {
@@ -78,14 +78,19 @@ public class HandleJBC {
             for (int i = 0; i < parent.getChildren().size(); i++) {
                 if (name.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Method")) {
                     jbcMethod = (JBCMethod) parent.getChildren().get(i);
-                    jbcMethod.setCalledCount(jbcMethod.getCalledCount() + 1);
-                    return;
+                    if(jbcMethod.getSignature().equals(calledMethod.getSignature())){
+                        jbcMethod.setCalledCount(jbcMethod.getCalledCount() + 1);
+                        return;
+                    }
                 }
             }
 
             // 못 찾음
             jbcMethod = new JBCMethod(this, name, parent);
             jbcMethod.setCalledCount(1);
+            jbcMethod.setSignature(calledMethod.getSignature());
+            jbcMethod.setReturnType(calledMethod.getSignature(), true);
+            jbcMethod.setParameters(calledMethod.getSignature());
         } else if (splitted.length == 2) {
             // 클래스 찾자
             String className = splitted[0];
@@ -95,7 +100,7 @@ public class HandleJBC {
             for (int i = 0; i < parent.getChildren().size(); i++) {
                 if (className.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Class")) {
                     jbcClass = (JBCClass) parent.getChildren().get(i);
-                    recursiveFindMethod(indexes.substring(className.length() + 1), jbcClass);
+                    recursiveFindMethod(indexes.substring(className.length() + 1), jbcClass, calledMethod);
                     return;
                 }
             }
@@ -107,13 +112,16 @@ public class HandleJBC {
                 jbcClass = new JBCClass(className, parent);
             JBCMethod jbcMethod = new JBCMethod(this, methodName, jbcClass);
             jbcMethod.setCalledCount(1);
+            jbcMethod.setSignature(calledMethod.getSignature());
+            jbcMethod.setReturnType(calledMethod.getSignature(), true);
+            jbcMethod.setParameters(calledMethod.getSignature());
         } else {
             // 패키지 찾자
             String packName = splitted[0];
             for (int i = 0; i < parent.getChildren().size(); i++) {
                 if (packName.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Package")) {
                     Node packNode = parent.getChildren().get(i);
-                    recursiveFindMethod(indexes.substring(packName.length() + 1), packNode);
+                    recursiveFindMethod(indexes.substring(packName.length() + 1), packNode, calledMethod);
                     return;
                 }
             }
@@ -122,12 +130,13 @@ public class HandleJBC {
             Node newPackage = new Node(packName);
             newPackage.setParent(parent);
             parent.getChildren().add(newPackage);
-            recursiveFindMethod(indexes.substring(packName.length() + 1), newPackage);
+            recursiveFindMethod(indexes.substring(packName.length() + 1), newPackage, calledMethod);
         }
     }
 
     public void countingMethodCall() {
-        for (String str : tmpCalledMethods) {
+        for (CalledMethod calledMethod : tmpCalledMethods) {
+            String str = calledMethod.getName();
             String[] splitted = str.split("\\."); // 패키지.패키지.패키지.클래스.함수이름
 
             // splitted Length가 3보다 작으면 default로 (왜냐면 패키지없이 클래스이름.함수이름 이니깐)
@@ -135,7 +144,7 @@ public class HandleJBC {
             Node callingNode = null;
             if (splitted.length < 3) {
                 callingNode = getStaticNodes().get(0); // (default)
-                recursiveFindMethod(str, callingNode);
+                recursiveFindMethod(str, callingNode, calledMethod);
             } else {
                 boolean isFind = false;
                 for (int i = 1; i < getStaticNodes().size(); i++) {
@@ -152,7 +161,7 @@ public class HandleJBC {
                     callingNode = newPackage;
                 }
 
-                recursiveFindMethod(str.substring(splitted[0].length() + 1), callingNode);
+                recursiveFindMethod(str.substring(splitted[0].length() + 1), callingNode, calledMethod);
             }
         }
 

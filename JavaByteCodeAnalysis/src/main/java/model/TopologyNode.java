@@ -4,15 +4,18 @@ import java.util.ArrayList;
 
 public class TopologyNode {
     private String key;
+    private String longName;
     private String name;
     private String type;
     private int calledCount;
     private ArrayList<String> outgoing = new ArrayList<>();
 
-    public TopologyNode(String key, String type) {
-        this.key = key;
-        String[] splitted = key.split("\\.");
-        this.name = splitted[splitted.length - 1];
+    public TopologyNode(Node node, String type) {
+        this.key = node.getLongName();
+        if (node instanceof JBCMethod)
+            this.key += "#" + ((JBCMethod) node).getSignature();
+        this.longName = node.getLongName();
+        this.name = node.getName();
         this.type = type;
 
         this.calledCount = 0;
@@ -24,6 +27,14 @@ public class TopologyNode {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getLongName() {
+        return longName;
+    }
+
+    public void setLongName(String longName) {
+        this.longName = longName;
     }
 
     public String getName() {
@@ -50,7 +61,15 @@ public class TopologyNode {
         this.calledCount = calledCount;
     }
 
+    public void increaseCalledCount() {
+        this.calledCount++;
+    }
+
     public ArrayList<String> getOutgoing() {
         return outgoing;
+    }
+
+    public void setOutgoing(ArrayList<String> outgoing) {
+        this.outgoing = outgoing;
     }
 }
