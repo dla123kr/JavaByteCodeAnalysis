@@ -54,6 +54,7 @@ public class Node {
 
     /**
      * 자동으로 부모와 자식을 연결해줌
+     *
      * @param parentName
      */
     public void setParent(HandleJBC handleJBC, String parentName) {
@@ -95,6 +96,7 @@ public class Node {
 
     /**
      * 직접 사용할 때에는, 부모만 지정해주므로 부모->자식은 따로 연결해줘야함
+     *
      * @param parent
      */
     public void setParent(Node parent) {
@@ -240,5 +242,58 @@ public class Node {
             returnType += "[]";
 
         return returnType;
+    }
+
+    public Node findChild(String name) {
+        return findChild(this, name);
+    }
+
+    public Node findChild(String name, String signature) {
+        return findChild(this, name, signature);
+    }
+
+    public Node findChild(Node parent, String name) {
+        Node ret = null;
+
+        for (Node node : parent.getChildren()) {
+            if (node.getLongName().equals(name)) {
+                ret = node;
+                break;
+            } else {
+                if (ret != null)
+                    break;
+                ret = findChild(node, name);
+            }
+        }
+
+        return ret;
+    }
+
+    public Node findChild(Node parent, String name, String signature) {
+        Node ret = null;
+
+        for (Node node : parent.getChildren()) {
+            if (!(node instanceof JBCMethod)) {
+                if (node.getLongName().equals(name)) {
+                    ret = node;
+                    break;
+                } else {
+                    if (ret != null)
+                        break;
+                    ret = findChild(node, name, signature);
+                }
+            } else {
+                if (node.getLongName().equals(name) && ((JBCMethod) node).getSignature().equals(signature)) {
+                    ret = node;
+                    break;
+                } else{
+                    if(ret != null)
+                        break;
+                    ret = findChild(node, name, signature);
+                }
+            }
+        }
+
+        return ret;
     }
 }
