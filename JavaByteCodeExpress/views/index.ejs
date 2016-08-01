@@ -57,6 +57,41 @@
     <div id="topology_modal_head" class="head">
         Topology
 
+        <div class="navbar" style="margin-top: 5px; background: white;">
+            <span>Relation</span>
+            <a id="relation_content" class="btn small" onclick="relationDD.show()" style="width: 100px; text-align: center;">
+                Both
+                <i class="icon-arrow1"></i>
+            </a>
+            <div id="relation_dd" class="dropdown" style="left: 80px;">
+                <div class="anchor" style="left: 20px;"></div>
+                <ul style="width: 100px;">
+                    <li>Both</li>
+                    <li>Outgoing</li>
+                    <li>Ingoing</li>
+                </ul>
+            </div>
+
+            <span style="margin-left: 20px;">Detail</span>
+            <a id="detail_content" class="btn small" onclick="detailDD.show()" style="width: 100px; text-align: center;">
+                Classes
+                <i class="icon-arrow1"></i>
+            </a>
+            <div id="detail_dd" class="dropdown" style="left: 240px;">
+                <div class="anchor" style="left: 20px;"></div>
+                <ul style="width: 100px;">
+                    <li>Methods</li>
+                    <li>Classes</li>
+                    <li>Packages</li>
+                </ul>
+            </div>
+
+            <span style="margin-left: 30px;">Depth</span>
+            <div id="depth_slider" class="slider horizontal" style="width: 160px; display: inline-block;"></div>
+
+            <a class="btn focus" style="margin-left: 10px;" onclick="loadTopology()"><i class="icon-refresh"></i></a>
+        </div>
+
     </div>
     <div id="topology_modal_body" class="body">
         <div id="topology" style="width: 1480px; height: 785px">

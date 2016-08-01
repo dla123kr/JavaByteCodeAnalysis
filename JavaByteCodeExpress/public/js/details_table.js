@@ -1,4 +1,4 @@
-jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
+jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider, table) {
 
     var dd = dropdown("#details_table_dd", {
         event: {
@@ -11,17 +11,18 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                     $("#topology_modal").css("top", oriTopologyModalHeight + $(document).scrollTop());
                     $("#topology_modal_body").height($("#topology_modal").height() - 65);
 
+
                     topologyLoadingModal.show();
                     // ajax로 데이터 요청
                     var name = ($("#selected_name").html()).split(' ')[2];
                     $.ajax({
-                        url: "http://192.168.0.203:8080/viewTopology?hash=" + hash + "&name=" + name + "&depth=" + 3,
+                        url: "http://192.168.0.203:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=Both&detail=Classes&depth=1",
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
                             var idx;
                             for (idx = 0; idx < result.length; idx++) {
-                                if(result[idx].key == name)
+                                if (result[idx].key == name)
                                     break;
                             }
 
@@ -46,9 +47,33 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                             topologyLoadingModal.hide();
                         }
                     });
-
-                    //
                 }
+            }
+        }
+    });
+
+    relationDD = dropdown("#relation_dd", {
+        event: {
+            change: function (data) {
+                $("#relation_content").html(data.text + " <i class='icon-arrow1'></i>");
+            }
+        }
+    });
+
+    depthSlider = slider("#depth_slider", {
+        type: "single",
+        orient: "horizontal",
+        tooltip: false,
+        from: 1,
+        min: 1,
+        max: 5,
+        step: 1
+    });
+
+    detailDD = dropdown("#detail_dd", {
+        event: {
+            change: function (data) {
+                $("#detail_content").html(data.text + " <i class='icon-arrow1'></i>");
             }
         }
     });
@@ -122,10 +147,6 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
         animate: true
     });
 
-    function filterViewTopology(data) {
-
-    }
-
     function filterNode(index) {
         var splitted = index.split('.');
         var nodes = loadedData;
@@ -150,6 +171,13 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
         }
 
         return ret;
+    }
+
+    loadTopology = function () {
+        var relation = $("#relation_content").html().trim().split(' ')[0];
+        var detail = $("#detail_content").html().trim().split(' ')[0];
+        console.log(relation);
+        console.log(detail);
     }
 
     $("#btn-home").click(function () {
