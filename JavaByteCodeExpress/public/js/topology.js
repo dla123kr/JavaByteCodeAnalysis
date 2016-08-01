@@ -74,12 +74,25 @@ jui.ready(null, function () {
                         return "/images/class.png";
                     } else if (data.type == "package") {
                         return "/images/package.png";
+                    } else if (data.type == "unknown") {
+                        return "/images/unknown.png";
                     } else {
                         return "/images/default.png";
                     }
                 },
                 nodeTitle: function (data) {
                     return data.name;
+                },
+                nodeScale: function (data) {
+                    if (data.type == "package")
+                        return 2.3;
+                    else if (data.type == "class")
+                        return 2;
+                    else if (data.type == "default")
+                        return 0.8;
+                    else if(data.type == "unknown")
+                        return 0.6;
+                    return 1;
                 }
             },
             widget: {
