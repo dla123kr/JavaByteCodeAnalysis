@@ -43,20 +43,18 @@ public class ViewTopologyController {
 
         Hashtable<String, TopologyNode> topologyNodeHashtable = new Hashtable<>();
 
-        TopologyNode main = new TopologyNode(mainNode, "class"); // 중심은 무조건 Class로 제한 ?
+        TopologyNode main = new TopologyNode(mainNode, "main_class"); // 중심은 무조건 Class로 제한 ?
         topologyNodeHashtable.put(main.getKey(), main);
 
         // 중심지의 클래스를 부르는 수를 셈
-//        int calledCount = calculateCalledCount(topologyNodeHashtable, nodes, name); // TODO: 2016-07-29 클래스로 묶을지, Method로 다 풀지
-//        main.setCalledCount(calledCount);
         if (!relation.equals("Outgoing")) {
             // Both, Ingoing
             if (detail.equals("Methods")) {
                 connectIngoingEdgeByMethod(topologyNodeHashtable, nodes, name);
             } else if (detail.equals("Classes")) {
-                connectIngoingEdgeByClass(topologyNodeHashtable, nodes, name);
+                connectIngoingEdgeByClass(topologyNodeHashtable, nodes, name, null);
             } else {
-
+                connectIngoingEdgeByPackage(topologyNodeHashtable, nodes, name, null);
             }
         }
 
@@ -174,30 +172,48 @@ public class ViewTopologyController {
         return ret;
     }
 
-    /**
-     * @param topologyNodeHashtable 반환할 TopologyNode의 Hashtable
-     * @param nodes                 탐색할 node들
-     * @param name                  중심이 되는 Class의 이름
-     */
-    private void connectIngoingEdgeByClass(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name) {
+    private void connectIngoingEdgeByPackage(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, Node pack) {
         for (Node node : nodes) {
             if (node.getType().equals("Package")) {
-                connectIngoingEdgeByClass(topologyNodeHashtable, node.getChildren(), name);
+                connectIngoingEdgeByPackage(topologyNodeHashtable, node.getChildren(), name, node);
             } else if (node.getType().equals("Class")) {
-                connectIngoingEdgeByClass(topologyNodeHashtable, node.getChildren(), name, (JBCClass) node);
+                connectIngoingEdgeByPackage(topologyNodeHashtable, node.getChildren(), name, pack);
+            } else if (node.getType().equals("Method")) {
+                JBCMethod jbcMethod = (JBCMethod) node;
+                for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
+                    String calledMethodName = calledMethod.getName();
+                    String[] splitted = calledMethodName.split("\\.");
+                    String calledClassName = calledMethodName.substring(0, calledMethodName.length() - (splitted[splitted.length - 1].length() + 1));
+                    if (calledClassName.equals(name)) {
+                        String longName = jbcMethod.getLongName();
+                        String[] splittedLongName = longName.split("\\.");
+                        if (name.equals(longName.substring(0, longName.length() - (splittedLongName[splittedLongName.length - 1].length() + 1))))
+                            continue;
+
+                        if (!topologyNodeHashtable.containsKey(pack.getLongName())) {
+                            TopologyNode tn = new TopologyNode(pack, "package");
+                            tn.getOutgoing().add(name);
+                            topologyNodeHashtable.put(tn.getKey(), tn);
+                        }
+                        break;
+                    }
+                }
             }
         }
     }
 
     /**
-     * @param topologyNodeHashtable
-     * @param nodes
-     * @param name
-     * @param jbcClass              nodes의 부모
+     * @param topologyNodeHashtable 반환할 TopologyNode의 Hashtable
+     * @param nodes                 탐색할 node들
+     * @param name                  중심이 되는 Class의 이름
      */
     private void connectIngoingEdgeByClass(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, JBCClass jbcClass) {
         for (Node node : nodes) {
-            if (node.getType().equals("Method")) {
+            if (node.getType().equals("Package")) {
+                connectIngoingEdgeByClass(topologyNodeHashtable, node.getChildren(), name, null);
+            } else if (node.getType().equals("Class")) {
+                connectIngoingEdgeByClass(topologyNodeHashtable, node.getChildren(), name, (JBCClass) node);
+            } else if (node.getType().equals("Method")) {
                 JBCMethod jbcMethod = (JBCMethod) node;
                 for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
                     String calledMethodName = calledMethod.getName();
