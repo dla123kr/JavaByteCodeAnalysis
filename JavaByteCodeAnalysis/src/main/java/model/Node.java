@@ -113,7 +113,7 @@ public class Node {
         return children;
     }
 
-    public ArrayList<Node> getPackages() {
+    public ArrayList<Node> packages() {
         ArrayList<Node> ret = new ArrayList<>();
 
         for (Node child : children) {
@@ -124,7 +124,7 @@ public class Node {
         return ret;
     }
 
-    public ArrayList<Node> getClasses() {
+    public ArrayList<Node> classes() {
         ArrayList<Node> ret = new ArrayList<>();
 
         for (Node child : children) {
