@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 @RestController
-@CrossOrigin(origins = "http://192.168.0.203:3000")
+@CrossOrigin(origins = "http://192.168.0.204:3000")
 public class ViewTopologyController {
     private static final Logger log = Logger.getLogger(ViewTopologyController.class);
 
@@ -41,19 +41,31 @@ public class ViewTopologyController {
             mainNode = node.findChild(name);
         }
 
-        // TODO: 2016-07-29 이미 불린애 안불린애 어케 처리하지? Hashtable ?
         Hashtable<String, TopologyNode> topologyNodeHashtable = new Hashtable<>();
 
-        TopologyNode main = new TopologyNode(mainNode, "class"); // TODO: 2016-07-29 패키지인지 클래스인지에 따라 이쪽에서 구분 지어줘야함
+        TopologyNode main = new TopologyNode(mainNode, "class"); // 중심은 무조건 Class로 제한 ?
         topologyNodeHashtable.put(main.getKey(), main);
 
         // 중심지의 클래스를 부르는 수를 셈
-        int calledCount = calculateCalledCount(topologyNodeHashtable, nodes, name); // TODO: 2016-07-29 클래스로 묶을지, Method로 다 풀지
-        main.setCalledCount(calledCount);
+//        int calledCount = calculateCalledCount(topologyNodeHashtable, nodes, name); // TODO: 2016-07-29 클래스로 묶을지, Method로 다 풀지
+//        main.setCalledCount(calledCount);
+        if (!relation.equals("Outgoing")) {
+            // Both, Ingoing
+            if (detail.equals("Methods")) {
+                connectIngoingEdgeByMethod(topologyNodeHashtable, nodes, name);
+            } else if (detail.equals("Classes")) {
+                connectIngoingEdgeByClass(topologyNodeHashtable, nodes, name);
+            } else {
+
+            }
+        }
 
         // 내가 부르는 애들을 셈
-        processCallingNode(topologyNodeHashtable, mainNode, main, hash); // TODO: 2016-07-29 클래스로 묶을지, Method로 다 풀지
-        deleteOutgoingDuplication(main);
+//        processCallingNode(topologyNodeHashtable, mainNode, main, hash); // TODO: 2016-07-29 클래스로 묶을지, Method로 다 풀지
+//        deleteOutgoingDuplication(main);
+        if (!relation.equals("Ingoing")) {
+
+        }
 
         return new ArrayList<>(topologyNodeHashtable.values());
     }
@@ -162,8 +174,84 @@ public class ViewTopologyController {
         return ret;
     }
 
+    /**
+     * @param topologyNodeHashtable 반환할 TopologyNode의 Hashtable
+     * @param nodes                 탐색할 node들
+     * @param name                  중심이 되는 Class의 이름
+     */
+    private void connectIngoingEdgeByClass(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name) {
+        for (Node node : nodes) {
+            if (node.getType().equals("Package")) {
+                connectIngoingEdgeByClass(topologyNodeHashtable, node.getChildren(), name);
+            } else if (node.getType().equals("Class")) {
+                connectIngoingEdgeByClass(topologyNodeHashtable, node.getChildren(), name, (JBCClass) node);
+            }
+        }
+    }
+
+    /**
+     * @param topologyNodeHashtable
+     * @param nodes
+     * @param name
+     * @param jbcClass              nodes의 부모
+     */
+    private void connectIngoingEdgeByClass(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, JBCClass jbcClass) {
+        for (Node node : nodes) {
+            if (node.getType().equals("Method")) {
+                JBCMethod jbcMethod = (JBCMethod) node;
+                for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
+                    String calledMethodName = calledMethod.getName();
+                    String[] splitted = calledMethodName.split("\\.");
+                    String calledClassName = calledMethodName.substring(0, calledMethodName.length() - (splitted[splitted.length - 1].length() + 1));
+                    if (calledClassName.equals(name)) {
+                        String longName = jbcMethod.getLongName();
+                        String[] splittedLongName = longName.split("\\.");
+                        if (name.equals(longName.substring(0, longName.length() - (splittedLongName[splittedLongName.length - 1].length() + 1))))
+                            continue;
+
+                        if (!topologyNodeHashtable.containsKey(jbcClass.getLongName())) {
+                            TopologyNode tn = new TopologyNode(jbcClass, "class");
+                            tn.getOutgoing().add(name);
+                            topologyNodeHashtable.put(tn.getKey(), tn);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void connectIngoingEdgeByMethod(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name) {
+        for (Node node : nodes) {
+            if (node.getType().equals("Package") || node.getType().equals("Class")) {
+                connectIngoingEdgeByMethod(topologyNodeHashtable, node.getChildren(), name);
+            } else if (node.getType().equals("Method")) {
+                JBCMethod jbcMethod = (JBCMethod) node;
+                for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
+                    String calledMethodName = calledMethod.getName();
+                    String[] splitted = calledMethodName.split("\\.");
+                    String calledClassName = calledMethodName.substring(0, calledMethodName.length() - (splitted[splitted.length - 1].length() + 1));
+                    if (calledClassName.equals(name)) {
+                        // 만약에 같은 클래스 내에서 호출한거면 패스
+                        String longName = jbcMethod.getLongName();
+                        String[] splittedLongName = longName.split("\\.");
+                        if (name.equals(longName.substring(0, longName.length() - (splittedLongName[splittedLongName.length - 1].length() + 1))))
+                            continue;
+
+                        TopologyNode tn = new TopologyNode(jbcMethod, filterAccessModifier(jbcMethod.getAccessModifier()));
+                        tn.getOutgoing().add(name);
+                        topologyNodeHashtable.put(tn.getKey(), tn);
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     private String filterAccessModifier(String modifier) {
-        if (modifier == null || modifier.isEmpty()) return "unknown";
+        if (modifier == null) return "unknown";
+        else if (modifier.isEmpty()) return "default";
 
         String ret = null;
         String[] splitted = modifier.split(" ");

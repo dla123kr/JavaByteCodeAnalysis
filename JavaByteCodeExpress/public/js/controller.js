@@ -3,7 +3,7 @@ $(document).ready(function () {
     hash = $("#hiddenHash").val();
 
     $.ajax({
-        url: "http://192.168.0.203:8080/index?hash=" + hash,
+        url: "http://192.168.0.204:8080/index?hash=" + hash,
         processData: false,
         contentType: false,
         data: hash,
@@ -27,7 +27,7 @@ $(document).ready(function () {
         $("#uploadButton").attr('disabled', true);
 
         $.ajax({
-            url: "http://192.168.0.203:8080/fileUpload",
+            url: "http://192.168.0.204:8080/fileUpload",
             processData: false,
             contentType: false,
             data: formData,
@@ -48,7 +48,7 @@ $(document).ready(function () {
 
     $("#clearButton").click(function () {
         $.ajax({
-            url: "http://192.168.0.203:8080/clear?hash=" + hash,
+            url: "http://192.168.0.204:8080/clear?hash=" + hash,
             type: "GET",
             success: function () {
                 console.log("clear 성공");
