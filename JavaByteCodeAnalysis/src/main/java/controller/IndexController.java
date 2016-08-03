@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 
 @RestController
-@CrossOrigin(origins = "http://192.168.0.203:3000")
+@CrossOrigin(origins = "http://192.168.0.204:3000")
 public class IndexController {
     private static final Logger log = Logger.getLogger(IndexController.class);
 

@@ -64,7 +64,11 @@ jui.ready(null, function () {
             brush: {
                 type: "topologynode",
                 nodeImage: function (data) {
-                    if (data.type == "public") {
+                    if (data.type == "main_class") {
+                        return "/images/main_class.png";
+                    } else if (data.type == "main_package") {
+                        return "images/main_package.png";
+                    } else if (data.type == "public") {
                         return "/images/public.png";
                     } else if (data.type == "protected") {
                         return "/images/protected.png";
@@ -76,7 +80,7 @@ jui.ready(null, function () {
                         return "/images/package.png";
                     } else if (data.type == "unknown") {
                         return "/images/unknown.png";
-                    } else {
+                    } else if (data.type == "default") {
                         return "/images/default.png";
                     }
                 },
@@ -84,15 +88,18 @@ jui.ready(null, function () {
                     return data.name;
                 },
                 nodeScale: function (data) {
-                    if (data.type == "package")
+                    if (data.type == "main_package")
                         return 2.3;
-                    else if (data.type == "class")
+                    else if (data.type == "main_class")
                         return 2;
-                    else if (data.type == "default")
-                        return 0.8;
-                    else if(data.type == "unknown")
+                    else if (data.type == "unknown")
                         return 0.6;
-                    return 1;
+                    else if (data.type == "class")
+                        return 1;
+                    else if (data.type == "package")
+                        return 1.2;
+                    else
+                        return 0.8;
                 }
             },
             widget: {

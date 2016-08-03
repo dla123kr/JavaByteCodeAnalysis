@@ -13,10 +13,13 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
 
 
                     topologyLoadingModal.show();
+                    $("#relation_content").html("Both <i class='icon-arrow1'></i>");
+                    $("#detail_content").html("Classes <i class='icon-arrow1'></i>");
+
                     // ajax로 데이터 요청
                     var name = ($("#selected_name").html()).split(' ')[2];
                     $.ajax({
-                        url: "http://192.168.0.203:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=Both&detail=Classes&depth=1",
+                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=Both&detail=Classes&depth=1",
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
@@ -178,6 +181,41 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         var detail = $("#detail_content").html().trim().split(' ')[0];
         console.log(relation);
         console.log(detail);
+
+        topologyLoadingModal.show();
+        var name = ($("#selected_name").html()).split(' ')[2];
+        $.ajax({
+            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=" + relation + "&detail=" + detail + "&depth=1",
+            type: "GET",
+            success: function (result) {
+                console.log("loadTopology 성공");
+                var idx;
+                for (idx = 0; idx < result.length; idx++) {
+                    if (result[idx].key == name)
+                        break;
+                }
+
+                result[idx] = {
+                    key: result[idx].key,
+                    longName: result[0].longName,
+                    name: result[idx].name,
+                    type: result[idx].type,
+                    x: chartWidth / 2,
+                    y: chartHeight / 2,
+                    outgoing: result[idx].outgoing,
+                    calledCount: result[idx].calledCount
+                };
+
+                initTopology(result);
+            },
+            error: function () {
+                console.log("viewTopology 에러");
+                initTopology(null);
+            },
+            complete: function () {
+                topologyLoadingModal.hide();
+            }
+        });
     }
 
     $("#btn-home").click(function () {

@@ -3,20 +3,26 @@ $(document).ready(function () {
     hash = $("#hiddenHash").val();
 
     $.ajax({
-        url: "http://192.168.0.203:8080/index?hash=" + hash,
+        url: "http://192.168.0.204:8080/index?hash=" + hash,
         processData: false,
         contentType: false,
-        data: hash,
+        data: {"hash": hash},
         type: "GET",
         success: function (result) {
             console.log("hash 건네기 성공");
             console.log(result);
-            constructTab(result);
+
+            loadedData = result;
+            filterPackagesAndClassesAtRoot(loadedData);
+            constructTables(loadedData);
+            constructTree(loadedData);
+
             loadingModal.hide();
         },
-        error: function () {
+        error: function (req, status, err) {
             console.log(this.data);
             console.log("hash 건네기 실패");
+            console.log("code: " + req.status + "\nmessage: " + req.responseText + "\nerror: " + err);
         }
     });
 
@@ -27,20 +33,23 @@ $(document).ready(function () {
         $("#uploadButton").attr('disabled', true);
 
         $.ajax({
-            url: "http://192.168.0.203:8080/fileUpload",
-            processData: false,
+            url: "http://192.168.0.204:8080/fileUpload",
             contentType: false,
+            processData: false,
             data: formData,
             type: 'POST',
             success: function (result) {
                 $("#uploadButton").attr('disabled', false);
+                console.log(result);
                 loadedData = result;
-                console.log(loadedData);
+                filterPackagesAndClassesAtRoot(loadedData);
                 constructTables(loadedData);
                 constructTree(loadedData);
             },
-            error: function () {
-                alert("에러 발생");
+            error: function (req, status, err) {
+                alert("fileUpload 실패");
+                console.log(status);
+                console.log("code: " + req.status + "\nmessage: " + req.responseText + "\nerror: " + err);
                 $("#uploadButton").attr('disabled', false);
             }
         });
@@ -48,7 +57,7 @@ $(document).ready(function () {
 
     $("#clearButton").click(function () {
         $.ajax({
-            url: "http://192.168.0.203:8080/clear?hash=" + hash,
+            url: "http://192.168.0.204:8080/clear?hash=" + hash,
             type: "GET",
             success: function () {
                 console.log("clear 성공");
@@ -59,14 +68,6 @@ $(document).ready(function () {
             }
         });
     });
-
-    function constructTab(nodes) {
-        if (!nodes) return;
-
-        loadedData = nodes;
-        constructTables(loadedData);
-        constructTree(loadedData);
-    }
 
     function constructTree(nodes) {
         packageTree.uit.removeNodes();
@@ -94,5 +95,27 @@ $(document).ready(function () {
         // 업데이트를 하자
         detailsTable.update(classes);
     };
+
+    function filterPackagesAndClassesAtRoot(nodes) {
+        for (var i = 0; i < nodes.length; i++) {
+            filterPackagesAndClasses(nodes[i]);
+        }
+    }
+
+    function filterPackagesAndClasses(node) {
+        var packages = [], classes = [];
+        for (var i = 0; i < node.children.length; i++) {
+            if (node.children[i].type == "Package") {
+                packages.push(node.children[i]);
+                filterPackagesAndClasses(node.children[i]);
+            } else if (node.children[i].type == "Class") {
+                classes.push(node.children[i]);
+                filterPackagesAndClasses(node.children[i]);
+            }
+        }
+
+        node.packages = packages;
+        node.classes = classes;
+    }
 });
 

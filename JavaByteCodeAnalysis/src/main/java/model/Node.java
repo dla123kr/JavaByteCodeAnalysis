@@ -113,7 +113,7 @@ public class Node {
         return children;
     }
 
-    public ArrayList<Node> getPackages() {
+    public ArrayList<Node> packages() {
         ArrayList<Node> ret = new ArrayList<>();
 
         for (Node child : children) {
@@ -124,7 +124,7 @@ public class Node {
         return ret;
     }
 
-    public ArrayList<Node> getClasses() {
+    public ArrayList<Node> classes() {
         ArrayList<Node> ret = new ArrayList<>();
 
         for (Node child : children) {
@@ -248,10 +248,6 @@ public class Node {
         return findChild(this, name);
     }
 
-    public Node findChild(String name, String signature) {
-        return findChild(this, name, signature);
-    }
-
     public Node findChild(Node parent, String name) {
         Node ret = null;
 
@@ -267,6 +263,10 @@ public class Node {
         }
 
         return ret;
+    }
+
+    public Node findChild(String name, String signature) {
+        return findChild(this, name, signature);
     }
 
     public Node findChild(Node parent, String name, String signature) {
@@ -286,8 +286,8 @@ public class Node {
                 if (node.getLongName().equals(name) && ((JBCMethod) node).getSignature().equals(signature)) {
                     ret = node;
                     break;
-                } else{
-                    if(ret != null)
+                } else {
+                    if (ret != null)
                         break;
                     ret = findChild(node, name, signature);
                 }

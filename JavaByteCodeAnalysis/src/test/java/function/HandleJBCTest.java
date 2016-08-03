@@ -90,15 +90,15 @@ public class HandleJBCTest {
 
     private void recursiveClassFileCount(Node node, ArrayList<String> packs) {
         if (packs.size() == 0) {
-            for (int i = 0; i < node.getClasses().size(); i++) {
-                if (((JBCClass) node.getClasses().get(i)).getIsLoaded())
+            for (int i = 0; i < node.classes().size(); i++) {
+                if (((JBCClass) node.classes().get(i)).getIsLoaded())
                     cnt++;
             }
         } else {
-            for (int i = 0; i < node.getPackages().size(); i++) {
-                if (node.getPackages().get(i).getName().equals(packs.get(0))) {
+            for (int i = 0; i < node.packages().size(); i++) {
+                if (node.packages().get(i).getName().equals(packs.get(0))) {
                     packs.remove(0);
-                    recursiveClassFileCount(node.getPackages().get(i), packs);
+                    recursiveClassFileCount(node.packages().get(i), packs);
                     break;
                 }
             }
@@ -133,10 +133,10 @@ public class HandleJBCTest {
                 }
             }
         } else {
-            for (int i = 0; i < node.getPackages().size(); i++) {
-                if (node.getPackages().get(i).getName().equals(packs.get(0))) {
+            for (int i = 0; i < node.packages().size(); i++) {
+                if (node.packages().get(i).getName().equals(packs.get(0))) {
                     packs.remove(0);
-                    recursiveCheckParent(node.getPackages().get(i), packs);
+                    recursiveCheckParent(node.packages().get(i), packs);
                     break;
                 }
             }
