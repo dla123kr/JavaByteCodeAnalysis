@@ -4,6 +4,7 @@ import function.HandleJBC;
 import model.*;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
+import util.NodeType;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -59,117 +60,19 @@ public class ViewTopologyController {
         }
 
         // 내가 부르는 애들을 셈
-//        processCallingNode(topologyNodeHashtable, mainNode, main, hash); // TODO: 2016-07-29 클래스로 묶을지, Method로 다 풀지
-//        deleteOutgoingDuplication(main);
         if (!relation.equals("Ingoing")) {
-
+            // Both, Outgoing
+            if (detail.equals("Methods")) {
+                connectOutgoingEdgeByMethod(topologyNodeHashtable, mainNode, main, hash);
+            } else if (detail.equals("Classes")) {
+                connectOutgoingEdgeNotMethod(topologyNodeHashtable, mainNode, main, hash, NodeType.CLASS);
+            } else {
+                connectOutgoingEdgeNotMethod(topologyNodeHashtable, mainNode, main, hash, NodeType.PACKAGE);
+            }
+            deleteOutgoingDuplication(main);
         }
 
         return new ArrayList<>(topologyNodeHashtable.values());
-    }
-
-    /**
-     * mainNode에서 호출을 찾아서 topologyNode의 outgoing에 추가
-     *
-     * @param mainNode
-     * @param mainTopologyNode
-     */
-    private void processCallingNode(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode mainTopologyNode, String hash) {
-        if (mainNode instanceof JBCClass) {
-            // 자식들은 함수 혹은 필드
-            for (Node node : mainNode.getChildren()) {
-                if (node instanceof JBCMethod) {
-                    JBCMethod jbcMethod = (JBCMethod) node; // 내 함수
-                    String key = jbcMethod.getLongName() + "#" + jbcMethod.getSignature();
-
-                    // 1. jbcMethod는 내 클래스안에 있는 함수니깐, 얘가 부르는 함수들이랑 내 클래스(mainTopologyNode의 outgoind)랑 연결시켜줘야해
-                    // 2. 근데 만약에 얘가 부르는 함수의 키(name#signature)가 없다면 새로 해쉬테이블에 추가, 있다면 넘어가자
-                    // 2 -> 1
-                    // 만약 mainTopologyNode의 class이름과 같으면 패스해야해
-                    for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
-                        String methodName = calledMethod.getName();
-                        String[] splitted = methodName.split("\\.");
-                        String className = methodName.substring(0, methodName.length() - (splitted[splitted.length - 1].length() + 1));
-                        if (className.equals(mainTopologyNode.getLongName()))
-                            continue;
-
-                        String calledKey = methodName + "#" + calledMethod.getSignature();
-                        TopologyNode calledTN = null;
-                        if (topologyNodeHashtable.containsKey(calledKey)) {
-                            calledTN = topologyNodeHashtable.get(calledKey);
-                            calledTN.increaseCalledCount();
-                        } else {
-                            /**
-                             * 새로 calledTN을 만들어줘야 하는데
-                             * isLoaded인 class에서만 찾자 !
-                             * (super의 함수는 어떻게할래 ?)
-                             */
-
-                            /**
-                             * jbcMethod의 modifier이랑 return type이 다 비어있으면 슈퍼
-                             * 존재하지않으면 super -> 우선 unknown으로
-                             */
-
-                            JBCMethod findedJBCMethod = null;
-                            for (Node _node : HandleJBC.getAllNodesSet().get(hash)) {
-                                if (findedJBCMethod != null)
-                                    break;
-                                findedJBCMethod = (JBCMethod) _node.findChild(methodName, calledMethod.getSignature());
-                            }
-
-                            if (findedJBCMethod.getAccessModifier() == null && findedJBCMethod.getReturnType() == null) {
-                                calledTN = new TopologyNode(findedJBCMethod, "unknown");
-                            } else {
-                                calledTN = new TopologyNode(findedJBCMethod, filterAccessModifier(findedJBCMethod.getAccessModifier()));
-                            }
-                            calledTN.setCalledCount(1);
-                            topologyNodeHashtable.put(calledTN.getKey(), calledTN);
-                        }
-                        mainTopologyNode.getOutgoing().add(calledKey);
-                    }
-                }
-            }
-        }
-    }
-
-    // isLoaded인 클래스에서만 찾는다
-    private int calculateCalledCount(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name) {
-        int ret = 0;
-
-        for (Node node : nodes) {
-            // 패키지, 클래스면 안으로 들어가고, 함수면 calledMethods를 살펴본다.
-            // 이름이 일치하면 불린 횟수를 증가시키고, 그 아이를 추가한다.
-            if (node.getType().equals("Package") || node.getType().equals("Class")) {
-                ret += calculateCalledCount(topologyNodeHashtable, node.getChildren(), name);
-            } else if (node.getType().equals("Method")) {
-                JBCMethod jbcMethod = (JBCMethod) node;
-                for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
-                    String calledMethodName = calledMethod.getName();
-                    String[] splitted = calledMethodName.split("\\.");
-                    String calledClassName = calledMethodName.substring(0, calledMethodName.length() - (splitted[splitted.length - 1].length() + 1));
-                    if (calledClassName.equals(name)) {
-                        // 만약에 같은 클래스 내에서 호출한거면 패스
-                        // TODO: 2016-07-28 나중에 클래스 내부 보여줄 땐 없어야됨
-                        String longName = jbcMethod.getLongName();
-                        String[] tmp = longName.split("\\.");
-                        if (name.equals(longName.substring(0, longName.length() - (tmp[tmp.length - 1].length() + 1))))
-                            continue;
-
-                        ret++;
-
-//                        TopologyNode tn = new TopologyNode(jbcMethod.getLongName(), filterAccessModifier(jbcMethod.getAccessModifier()));
-                        TopologyNode tn = new TopologyNode(jbcMethod, filterAccessModifier(jbcMethod.getAccessModifier()));
-                        tn.getOutgoing().add(name); // TODO: 2016-07-28 outgoing 다시 생각해보자
-                        topologyNodeHashtable.put(tn.getKey(), tn);
-
-                        // 찾았으니 더 이상 볼 필요가 없음
-                        break;
-                    }
-                }
-            }
-        }
-
-        return ret;
     }
 
     private void connectIngoingEdgeByPackage(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, Node pack) {
@@ -254,7 +157,7 @@ public class ViewTopologyController {
                         if (name.equals(longName.substring(0, longName.length() - (splittedLongName[splittedLongName.length - 1].length() + 1))))
                             continue;
 
-                        TopologyNode tn = new TopologyNode(jbcMethod, filterAccessModifier(jbcMethod.getAccessModifier()));
+                        TopologyNode tn = new TopologyNode(jbcMethod, filterAccessModifier(jbcMethod.getAccessModifier(), jbcMethod, null));
                         tn.getOutgoing().add(name);
                         topologyNodeHashtable.put(tn.getKey(), tn);
 
@@ -265,11 +168,101 @@ public class ViewTopologyController {
         }
     }
 
-    private String filterAccessModifier(String modifier) {
-        if (modifier == null) return "unknown";
-        else if (modifier.isEmpty()) return "default";
+    private void connectOutgoingEdgeNotMethod(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode mainTopologyNode, String hash, int detailType) {
+        if (mainNode instanceof JBCClass) {
+            for (Node node : mainNode.getChildren()) {
+                if (node.getType().equals("Method")) {
+                    JBCMethod jbcMethod = (JBCMethod) node; // 내 함수
 
+                    for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
+                        String calledMethodName = calledMethod.getName();
+                        String[] splt = calledMethodName.split("\\.");
+                        String calledClassName = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + 1));
+                        String key = null;
+                        if (calledClassName.equals(mainTopologyNode.getLongName()))
+                            continue;
+
+                        if (detailType == NodeType.PACKAGE) {
+                            splt = calledClassName.split("\\.");
+                            key = calledClassName.substring(0, calledClassName.length() - (splt[splt.length - 1].length() + 1));
+                        } else if (detailType == NodeType.CLASS) {
+                            key = calledClassName;
+                        }
+
+                        TopologyNode calledTN = null;
+                        if (topologyNodeHashtable.containsKey(key)) {
+                            calledTN = topologyNodeHashtable.get(key);
+//                            calledTN.increaseCalledCount();
+                        } else {
+                            Node findedNode = null;
+                            for (Node _node : HandleJBC.getAllNodesSet().get(hash)) {
+                                if (findedNode != null)
+                                    break;
+                                findedNode = _node.findChild(key);
+                            }
+
+                            String type = detailType == NodeType.PACKAGE ? "package" : "class";
+                            calledTN = new TopologyNode(findedNode, type);
+                            topologyNodeHashtable.put(calledTN.getKey(), calledTN);
+                        }
+                        mainTopologyNode.getOutgoing().add(key);
+                    }
+                }
+            }
+        }
+    }
+
+    private void connectOutgoingEdgeByMethod(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode mainTopologyNode, String hash) {
+        if (mainNode instanceof JBCClass) {
+            for (Node node : mainNode.getChildren()) {
+                if (node.getType().equals("Method")) {
+                    JBCMethod jbcMethod = (JBCMethod) node; // 내 함수
+
+                    for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
+                        String calledMethodName = calledMethod.getName();
+                        String[] splitted = calledMethodName.split("\\.");
+                        String calledClassName = calledMethodName.substring(0, calledMethodName.length() - (splitted[splitted.length - 1].length() + 1));
+                        if (calledClassName.equals(mainTopologyNode.getLongName()))
+                            continue;
+
+                        String calledMethodKey = calledMethodName + "#" + calledMethod.getSignature();
+                        TopologyNode calledTN = null;
+                        if (topologyNodeHashtable.containsKey(calledMethodKey)) {
+                            calledTN = topologyNodeHashtable.get(calledMethodKey);
+//                            calledTN.increaseCalledCount();
+                        } else {
+                            JBCMethod findedJBCMethod = null;
+                            for (Node _node : HandleJBC.getAllNodesSet().get(hash)) {
+                                if (findedJBCMethod != null)
+                                    break;
+                                findedJBCMethod = (JBCMethod) _node.findChild(calledMethodName, calledMethod.getSignature());
+                            }
+
+                            calledTN = new TopologyNode(findedJBCMethod, filterAccessModifier(findedJBCMethod.getAccessModifier(), findedJBCMethod, (JBCClass) mainNode));
+                            topologyNodeHashtable.put(calledTN.getKey(), calledTN);
+                        }
+                        mainTopologyNode.getOutgoing().add(calledMethodKey);
+                    }
+                }
+            }
+        }
+    }
+
+    private String filterAccessModifier(String modifier, JBCMethod jbcMethod, JBCClass mainNode) {
         String ret = null;
+        if (modifier == null && mainNode != null) {
+            // 패키지이름, 클래스이름으로 구분가능
+            String longName = jbcMethod.getLongName();
+            int methodLength = jbcMethod.getName().length();
+            String className = longName.substring(0, longName.length() - (methodLength + 1));
+
+            if (mainNode.getSuperClassName() != null && mainNode.getSuperClassName().equals(className)) {
+                return "protected";
+            } else {
+                return "public";
+            }
+        } else if (modifier.isEmpty()) return "default";
+
         String[] splitted = modifier.split(" ");
         switch (splitted[0]) {
             case "public":
@@ -282,7 +275,7 @@ public class ViewTopologyController {
                 ret = "private";
                 break;
             default:
-                ret = "default";
+                ret = "unknown";
                 break;
         }
 
