@@ -17,17 +17,24 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                     $("#detail_content").html("Classes <i class='icon-arrow1'></i>");
 
                     // ajax로 데이터 요청
-                    var name = ($("#selected_name").html()).split(' ')[2];
+
+                    var name = $("#selected_name").text().trim().replace("#", "*");
+                    var type = "Class";
+                    if (name.split('*').length > 1)
+                        type = "Method";
                     $.ajax({
-                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=Both&detail=Classes&depth=1",
+                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=Both&detail=Classes&depth=1",
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
+                            console.log(result);
+                            name = name.replace("*", "#");
                             var idx;
                             for (idx = 0; idx < result.length; idx++) {
                                 if (result[idx].key == name)
                                     break;
                             }
+                            console.log(idx);
 
                             result[idx] = {
                                 key: result[idx].key,
@@ -150,6 +157,18 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         animate: true
     });
 
+    methodRightClick = function (className, content, signature, e) {
+        e.preventDefault();
+
+        var icon = "<i class='icon-message'></i> ";
+        var methodName = content.innerText;
+        var longName = className + "." + methodName;
+
+        $("#selected_name").html(icon + longName + "#" + signature);
+        dd.move(e.pageX, e.pageY);
+        dd.show();
+    }
+
     function filterNode(index) {
         var splitted = index.split('.');
         var nodes = loadedData;
@@ -183,12 +202,16 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         console.log(detail);
 
         topologyLoadingModal.show();
-        var name = ($("#selected_name").html()).split(' ')[2];
+        var name = $("#selected_name").text().trim().replace("#", "*");
+        var type = "Class";
+        if (name.split('*').length > 1)
+            type = "Method";
         $.ajax({
-            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=" + relation + "&detail=" + detail + "&depth=1",
+            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=1",
             type: "GET",
             success: function (result) {
                 console.log("loadTopology 성공");
+                name = name.replace("*", "#");
                 var idx;
                 for (idx = 0; idx < result.length; idx++) {
                     if (result[idx].key == name)
