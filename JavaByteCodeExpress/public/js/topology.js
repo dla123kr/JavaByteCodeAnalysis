@@ -45,7 +45,7 @@ jui.ready(null, function () {
         }
     });
 
-    initTopology = function (data) {
+    initTopology = function (data, centerKey) {
         if (data == null)
             data = [];
         $("#topology").empty();
@@ -102,7 +102,8 @@ jui.ready(null, function () {
                         return 1.2;
                     else
                         return 0.8;
-                }
+                },
+                activeNode: centerKey
             },
             widget: {
                 type: "topologyctrl",

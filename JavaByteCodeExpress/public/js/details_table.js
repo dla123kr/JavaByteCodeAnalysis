@@ -11,7 +11,6 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                     $("#topology_modal").css("top", oriTopologyModalHeight + $(document).scrollTop());
                     $("#topology_modal_body").height($("#topology_modal").height() - 65);
 
-
                     topologyLoadingModal.show();
                     $("#relation_content").html("Both <i class='icon-arrow1'></i>");
                     $("#detail_content").html("Classes <i class='icon-arrow1'></i>");
@@ -47,7 +46,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                                 calledCount: result[idx].calledCount
                             };
 
-                            initTopology(result);
+                            initTopology(result, result[idx].key);
                         },
                         error: function () {
                             console.log("viewTopology 에러");
@@ -123,7 +122,6 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                         }
 
                         index = treeIndex + "." + packIndex;
-                        initTopology();
                     }
 
                     var node = packageTree.get(index);
@@ -229,7 +227,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                     calledCount: result[idx].calledCount
                 };
 
-                initTopology(result);
+                initTopology(result, result[idx].key);
             },
             error: function () {
                 console.log("viewTopology 에러");
