@@ -231,7 +231,10 @@ public class ViewTopologyController {
                 if (mainType.equals("main_class")) {
                     calledKey = calledKey.substring(0, calledKey.length() - (splt[splt.length - 1].length() + 1)); // Class이름 제외하고 Package만 뽑아냄
                 } else if (mainType.equals("main_method")) {
-                    calledKey = calledKey.substring(0, calledKey.length() - (splt[splt.length - 1].length() + splt[splt.length - 2].length() + 2)); // Method, Class이름 제외하고 Package만 뽑아냄
+                    if(splt.length > 2)
+                        calledKey = calledKey.substring(0, calledKey.length() - (splt[splt.length - 1].length() + splt[splt.length - 2].length() + 2)); // Method, Class이름 제외하고 Package만 뽑아냄
+                    else
+                        calledKey = "(default)";
                 }
             } else if (detailType == NodeType.CLASS) {
                 splt = calledKey.split("\\.");

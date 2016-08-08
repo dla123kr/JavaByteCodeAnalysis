@@ -11,11 +11,15 @@ public class TopologyNode {
     private ArrayList<String> outgoing = new ArrayList<>();
 
     public TopologyNode(Node node, String type) {
-        this.key = node.getLongName();
-        if (node instanceof JBCMethod)
-            this.key += "#" + ((JBCMethod) node).getSignature();
-        this.longName = node.getLongName();
-        this.name = node.getName();
+        if (node != null) {
+            this.key = node.getLongName();
+            if (node instanceof JBCMethod)
+                this.key += "#" + ((JBCMethod) node).getSignature();
+            this.longName = node.getLongName();
+            this.name = node.getName();
+        } else {
+            this.key = this.name = this.longName = "(default)";
+        }
         this.type = type;
 
         this.calledCount = 0;
