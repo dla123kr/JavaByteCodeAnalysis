@@ -68,11 +68,11 @@ public class ViewTopologyController {
         if (!relation.equals("Outgoing")) {
             // Both, Ingoing
             if (detail.equals("Methods")) {
-                connectIngoingEdgeByMethod(topologyNodeHashtable, nodes, name, mainType);
+                connectIngoingEdgeFromMethodsToCenter(topologyNodeHashtable, nodes, name, mainType);
             } else if (detail.equals("Classes")) {
-                connectIngoingEdgeNotMethod(topologyNodeHashtable, nodes, name, null, mainType, NodeType.CLASS);
+                connectIngoingEdgeFromNotMethodsToCenter(topologyNodeHashtable, nodes, name, null, mainType, NodeType.CLASS);
             } else {
-                connectIngoingEdgeNotMethod(topologyNodeHashtable, nodes, name, null, mainType, NodeType.PACKAGE);
+                connectIngoingEdgeFromNotMethodsToCenter(topologyNodeHashtable, nodes, name, null, mainType, NodeType.PACKAGE);
             }
         }
 
@@ -81,21 +81,21 @@ public class ViewTopologyController {
             // Both, Outgoing
             if (detail.equals("Methods")) {
                 if (mainType.equals("main_class")) {
-                    connectOutgoingEdgeByMethodInClass(topologyNodeHashtable, mainNode, main, hash);
+                    connectOutgoingEdgeFromClassToMethods(topologyNodeHashtable, mainNode, main, hash, 0, depth);
                 } else if (mainType.equals("main_method")) {
-                    connectOutgoingEdgeByMethodInMethod(topologyNodeHashtable, (JBCMethod) mainNode, main, hash, "main_method");
+                    connectOutgoingEdgeFromMethodToMethods(topologyNodeHashtable, (JBCMethod) mainNode, main, "main_method", main, "method", hash, 0, depth);
                 }
             } else if (detail.equals("Classes")) {
                 if (mainType.equals("main_class")) {
-                    connectOutgoingEdgeNotMethodInClass(topologyNodeHashtable, mainNode, main, hash, NodeType.CLASS);
+                    connectOutgoingEdgeFromNotMethodToNotMethods(topologyNodeHashtable, mainNode, main, "main_class", main, "class", NodeType.CLASS, hash, 0, depth);
                 } else if (mainType.equals("main_method")) {
-                    connectOutgoingEdgeNotMethodInMethod(topologyNodeHashtable, (JBCMethod) mainNode, main, hash, "main_method", NodeType.CLASS);
+                    connectOutgoingEdgeFromMethodToNotMethods(topologyNodeHashtable, (JBCMethod) mainNode, main, "main_method", main, "method", NodeType.CLASS, hash, 0, depth);
                 }
             } else {
                 if (mainType.equals("main_class")) {
-                    connectOutgoingEdgeNotMethodInClass(topologyNodeHashtable, mainNode, main, hash, NodeType.PACKAGE);
+                    connectOutgoingEdgeFromNotMethodToNotMethods(topologyNodeHashtable, mainNode, main, "main_class", main, "class", NodeType.PACKAGE, hash, 0, depth);
                 } else if (mainType.equals("main_method")) {
-                    connectOutgoingEdgeNotMethodInMethod(topologyNodeHashtable, (JBCMethod) mainNode, main, hash, "main_method", NodeType.PACKAGE);
+                    connectOutgoingEdgeFromMethodToNotMethods(topologyNodeHashtable, (JBCMethod) mainNode, main, "main_method", main, "method", NodeType.PACKAGE, hash, 0, depth);
                 }
             }
             deleteOutgoingDuplication(main);
@@ -111,15 +111,15 @@ public class ViewTopologyController {
      * @param parent                부모
      * @param detailType            중앙의 타입
      */
-    private void connectIngoingEdgeNotMethod(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, Node parent, String mainType, int detailType) {
+    private void connectIngoingEdgeFromNotMethodsToCenter(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, Node parent, String mainType, int detailType) {
         for (Node node : nodes) {
             Node param = null;
             if (node.getType().equals("Package")) {
                 param = detailType == NodeType.PACKAGE ? node : null;
-                connectIngoingEdgeNotMethod(topologyNodeHashtable, node.getChildren(), name, param, mainType, detailType);
+                connectIngoingEdgeFromNotMethodsToCenter(topologyNodeHashtable, node.getChildren(), name, param, mainType, detailType);
             } else if (node.getType().equals("Class")) {
                 param = detailType == NodeType.PACKAGE ? parent : node;
-                connectIngoingEdgeNotMethod(topologyNodeHashtable, node.getChildren(), name, param, mainType, detailType);
+                connectIngoingEdgeFromNotMethodsToCenter(topologyNodeHashtable, node.getChildren(), name, param, mainType, detailType);
             } else if (node.getType().equals("Method")) {
                 JBCMethod jbcMethod = (JBCMethod) node; // 이 함수가 부른 애들 중에서 name이 있으면 추가할거야.
                 if (checkParentRelation(name, jbcMethod, mainType)) {
@@ -151,10 +151,10 @@ public class ViewTopologyController {
         }
     }
 
-    private void connectIngoingEdgeByMethod(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, String mainType) {
+    private void connectIngoingEdgeFromMethodsToCenter(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, String mainType) {
         for (Node node : nodes) {
             if (node.getType().equals("Package") || node.getType().equals("Class")) {
-                connectIngoingEdgeByMethod(topologyNodeHashtable, node.getChildren(), name, mainType);
+                connectIngoingEdgeFromMethodsToCenter(topologyNodeHashtable, node.getChildren(), name, mainType);
             } else if (node.getType().equals("Method")) {
                 JBCMethod jbcMethod = (JBCMethod) node;
                 if (checkParentRelation(name, jbcMethod, mainType)) {
@@ -202,88 +202,133 @@ public class ViewTopologyController {
         return false;
     }
 
-    private void connectOutgoingEdgeNotMethodInClass(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode mainTopologyNode, String hash, int detailType) {
-        for (Node node : mainNode.getChildren()) {
-            if (node.getType().equals("Method")) {
-                JBCMethod jbcMethod = (JBCMethod) node; // 내 함수
-                connectOutgoingEdgeNotMethodInMethod(topologyNodeHashtable, jbcMethod, mainTopologyNode, hash, "main_class", detailType);
+    /**
+     * @param topologyNodeHashtable
+     * @param mainNode
+     * @param rootTopologyNode
+     * @param rootType              루트의 타입 (main_class 혹은 main_method)
+     * @param startTopologyNode
+     * @param startType             시작점의 타입 (class, package)
+     * @param detailType            리프의 타입 (NodeType.PACKAGE 혹은 NodeType.CLASS)
+     * @param hash
+     * @param curDepth
+     * @param endDepth
+     */
+    private void connectOutgoingEdgeFromNotMethodToNotMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode rootTopologyNode, String rootType, TopologyNode startTopologyNode, String startType, int detailType, String hash, int curDepth, int endDepth) {
+        // TODO: 2016-08-09 수정해야함 NotMethod로
+        if (mainNode.getType().equals("Class")) {
+            for (Node node : mainNode.getChildren()) {
+                if (node.getType().equals("Method")) {
+                    JBCMethod jbcMethod = (JBCMethod) node; // 내 함수
+                    connectOutgoingEdgeFromMethodToNotMethods(topologyNodeHashtable, jbcMethod, rootTopologyNode, rootType, startTopologyNode, startType, detailType, hash, curDepth, endDepth);
+                }
+            }
+        } else {
+            for (Node node : mainNode.getChildren()) {
+                connectOutgoingEdgeFromNotMethodToNotMethods(topologyNodeHashtable, node, rootTopologyNode, rootType, startTopologyNode, startType, detailType, hash, curDepth, endDepth);
             }
         }
     }
 
-    private void connectOutgoingEdgeNotMethodInMethod(Hashtable<String, TopologyNode> topologyNodeHashtable, JBCMethod jbcMethod, TopologyNode mainTopologyNode, String hash, String mainType, int detailType) {
+    private void connectOutgoingEdgeFromMethodToNotMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, JBCMethod jbcMethod, TopologyNode rootTopologyNode, String rootType, TopologyNode startTopologyNode, String startType, int detailType, String hash, int curDepth, int endDepth) {
+        if (curDepth == endDepth)
+            return;
+
         for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
             String calledMethodName = calledMethod.getName();
             String[] splt = calledMethodName.split("\\.");
 
-            String calledKey = null;
-            if (mainType.equals("main_class")) {
-                calledKey = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + 1));
-            } else if (mainType.equals("main_method")) {
-                calledKey = calledMethod.getName() + "#" + calledMethod.getSignature();
+            // 루트 혹은 스타트와 관련있으면 패스 (Ingoing이랑 겹치는거 방지)
+            String chkRootKey = null, chkStartKey = null;
+            if (rootType.equals("main_class")) {
+                chkRootKey = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + 1));
+            } else if (rootType.equals("main_method")) {
+                chkRootKey = calledMethod.getName() + "#" + calledMethod.getSignature();
             }
-            if (calledKey.equals(mainTopologyNode.getKey())) {
+            if (startType.equals("package")) {
+                if (splt.length > 2)
+                    chkStartKey = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + splt[splt.length - 2].length() + 2));
+                else
+                    chkStartKey = "(default)";
+            } else if (startType.equals("class")) {
+                chkStartKey = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + 1));
+            } else if (startType.equals("method")) {
+                chkStartKey = calledMethod.getName() + "#" + calledMethod.getSignature();
+            }
+            if (chkRootKey.equals(rootTopologyNode.getKey()) || chkStartKey.equals(startTopologyNode.getKey())) {
                 continue;
             }
 
             if (detailType == NodeType.PACKAGE) {
-                splt = calledKey.split("\\.");
-                if (mainType.equals("main_class")) {
-                    calledKey = calledKey.substring(0, calledKey.length() - (splt[splt.length - 1].length() + 1)); // Class이름 제외하고 Package만 뽑아냄
-                } else if (mainType.equals("main_method")) {
-                    if(splt.length > 2)
-                        calledKey = calledKey.substring(0, calledKey.length() - (splt[splt.length - 1].length() + splt[splt.length - 2].length() + 2)); // Method, Class이름 제외하고 Package만 뽑아냄
+                splt = chkStartKey.split("\\.");
+                if (startType.equals("class")) {
+                    chkStartKey = chkStartKey.substring(0, chkStartKey.length() - (splt[splt.length - 1].length() + 1)); // Class이름 제외하고 Package만 뽑아냄
+                } else if (startType.equals("method")) {
+                    if (splt.length > 2)
+                        chkStartKey = chkStartKey.substring(0, chkStartKey.length() - (splt[splt.length - 1].length() + splt[splt.length - 2].length() + 2)); // Method, Class이름 제외하고 Package만 뽑아냄
                     else
-                        calledKey = "(default)";
+                        chkStartKey = "(default)";
                 }
             } else if (detailType == NodeType.CLASS) {
-                splt = calledKey.split("\\.");
-                if (mainType.equals("main_method")) {
-                    calledKey = calledKey.substring(0, calledKey.length() - (splt[splt.length - 1].length() + 1)); // Method이름 제외하고 Class만 뽑아냄
+                splt = chkStartKey.split("\\.");
+                if (startType.equals("method")) {
+                    chkStartKey = chkStartKey.substring(0, chkStartKey.length() - (splt[splt.length - 1].length() + 1)); // Method이름 제외하고 Class만 뽑아냄
                 }
             }
 
             TopologyNode calledTN = null;
-            if (topologyNodeHashtable.containsKey(calledKey)) {
-                calledTN = topologyNodeHashtable.get(calledKey);
+            if (topologyNodeHashtable.containsKey(chkStartKey)) {
+                calledTN = topologyNodeHashtable.get(chkStartKey);
                 // calledTN.increaseCalledCount();
             } else {
                 Node findedNode = null;
                 for (Node _node : HandleJBC.getAllNodesSet().get(hash)) {
                     if (findedNode != null)
                         break;
-                    findedNode = _node.findChild(calledKey);
+                    findedNode = _node.findChild(chkStartKey);
                 }
 
                 String type = detailType == NodeType.PACKAGE ? "package" : "class";
                 calledTN = new TopologyNode(findedNode, type);
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
+
+                // TODO: 2016-08-09 추가 depth 진행
+                connectOutgoingEdgeFromNotMethodToNotMethods(topologyNodeHashtable, findedNode, rootTopologyNode, rootType, calledTN, type, detailType, hash, curDepth + 1, endDepth);
             }
-            mainTopologyNode.getOutgoing().add(calledKey);
+            startTopologyNode.getOutgoing().add(chkStartKey);
         }
     }
 
-    private void connectOutgoingEdgeByMethodInClass(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode mainTopologyNode, String hash) {
+    private void connectOutgoingEdgeFromClassToMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode startTopologyNode, String hash, int curDepth, int endDepth) {
         for (Node node : mainNode.getChildren()) {
             if (node.getType().equals("Method")) {
                 JBCMethod jbcMethod = (JBCMethod) node; // 내 함수
-                connectOutgoingEdgeByMethodInMethod(topologyNodeHashtable, jbcMethod, mainTopologyNode, hash, "main_class");
+                connectOutgoingEdgeFromMethodToMethods(topologyNodeHashtable, jbcMethod, startTopologyNode, "main_class", startTopologyNode, "class", hash, curDepth, endDepth);
             }
         }
     }
 
-    private void connectOutgoingEdgeByMethodInMethod(Hashtable<String, TopologyNode> topologyNodeHashtable, JBCMethod jbcMethod, TopologyNode mainTopologyNode, String hash, String mainType) {
+    private void connectOutgoingEdgeFromMethodToMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, JBCMethod jbcMethod, TopologyNode rootTopologyNode, String rootType, TopologyNode startTopologyNode, String startType, String hash, int curDepth, int endDepth) {
+        if (curDepth == endDepth)
+            return;
+
         for (CalledMethod calledMethod : jbcMethod.getCalledMethods()) {
             String calledMethodName = calledMethod.getName();
             String[] splt = calledMethodName.split("\\.");
 
-            String calledKey = null;
-            if (mainType.equals("main_class")) {
-                calledKey = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + 1)); // 클래스 이름
-            } else if (mainType.equals("main_method")) {
-                calledKey = calledMethod.getName() + "#" + calledMethod.getSignature(); // 함수 이름
+            // 루트 혹은 스타트와 관련있으면 패스 (Ingoing이랑 겹치는거 방지)
+            String chkRootKey = null, chkStartKey = null;
+            if (rootType.equals("main_class")) {
+                chkRootKey = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + 1)); // 클래스 이름
+            } else if (rootType.equals("main_method")) {
+                chkRootKey = calledMethod.getName() + "#" + calledMethod.getSignature(); // 함수 이름
             }
-            if (calledKey.equals(mainTopologyNode.getKey())) {
+            if (startType.equals("class")) {
+                chkStartKey = calledMethodName.substring(0, calledMethodName.length() - (splt[splt.length - 1].length() + 1)); // 클래스 이름
+            } else if (startType.equals("method")) {
+                chkStartKey = calledMethod.getName() + "#" + calledMethod.getSignature(); // 함수 이름
+            }
+            if (chkRootKey.equals(rootTopologyNode.getKey()) || chkStartKey.equals(startTopologyNode.getKey())) {
                 continue;
             }
 
@@ -292,6 +337,8 @@ public class ViewTopologyController {
             if (topologyNodeHashtable.containsKey(calledMethodKey)) {
                 calledTN = topologyNodeHashtable.get(calledMethodKey);
 //                calledTN.increaseCalledCount();
+
+                // TODO: 2016-08-08 이미 있을 땐 어떡하지 ?
             } else {
                 AbstractMap.SimpleEntry<Node, Node> parentAndChild = null;
                 for (Node _node : HandleJBC.getAllNodesSet().get(hash)) {
@@ -304,8 +351,11 @@ public class ViewTopologyController {
 
                 calledTN = new TopologyNode(findedJBCMethod, filterAccessModifier(findedJBCMethod.getAccessModifier(), findedJBCMethod, findedJBCClass));
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
+
+                // TODO: 2016-08-08 추가 depth 진행?????
+                connectOutgoingEdgeFromMethodToMethods(topologyNodeHashtable, findedJBCMethod, rootTopologyNode, rootType, calledTN, "method", hash, curDepth + 1, endDepth);
             }
-            mainTopologyNode.getOutgoing().add(calledMethodKey);
+            startTopologyNode.getOutgoing().add(calledMethodKey);
         }
     }
 

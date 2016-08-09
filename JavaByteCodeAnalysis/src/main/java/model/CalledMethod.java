@@ -28,4 +28,20 @@ public class CalledMethod {
     public void setSignature(String signature) {
         this.signature = signature;
     }
+
+    @Override
+    public int hashCode() {
+        return (this.name.hashCode() + this.signature.hashCode());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof CalledMethod) {
+            CalledMethod calledMethod = (CalledMethod) obj;
+            if (this.getName().equals(calledMethod.getName()) && this.getSignature().equals(calledMethod.getSignature())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -14,6 +14,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                     topologyLoadingModal.show();
                     $("#relation_content").html("Both <i class='icon-arrow1'></i>");
                     $("#detail_content").html("Classes <i class='icon-arrow1'></i>");
+                    depthSlider.setFromValue(1);
 
                     // ajax로 데이터 요청
 
@@ -196,8 +197,10 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
     loadTopology = function () {
         var relation = $("#relation_content").html().trim().split(' ')[0];
         var detail = $("#detail_content").html().trim().split(' ')[0];
+        var depth = depthSlider.getFromValue();
         console.log(relation);
         console.log(detail);
+        console.log(depth);
 
         topologyLoadingModal.show();
         var name = $("#selected_name").text().trim().replace("#", "*");
@@ -205,7 +208,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         if (name.split('*').length > 1)
             type = "Method";
         $.ajax({
-            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=1",
+            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
             type: "GET",
             success: function (result) {
                 console.log("loadTopology 성공");
