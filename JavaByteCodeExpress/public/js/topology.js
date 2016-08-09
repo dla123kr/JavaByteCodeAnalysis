@@ -45,7 +45,7 @@ jui.ready(null, function () {
         }
     });
 
-    initTopology = function (data) {
+    initTopology = function (data, centerKey) {
         if (data == null)
             data = [];
         $("#topology").empty();
@@ -68,6 +68,8 @@ jui.ready(null, function () {
                         return "/images/main_class.png";
                     } else if (data.type == "main_package") {
                         return "images/main_package.png";
+                    } else if (data.type == "main_method") {
+                        return "images/main_method.png";
                     } else if (data.type == "public") {
                         return "/images/public.png";
                     } else if (data.type == "protected") {
@@ -90,7 +92,7 @@ jui.ready(null, function () {
                 nodeScale: function (data) {
                     if (data.type == "main_package")
                         return 2.3;
-                    else if (data.type == "main_class")
+                    else if (data.type == "main_class" || data.type == "main_method")
                         return 2;
                     else if (data.type == "unknown")
                         return 0.6;
@@ -100,7 +102,8 @@ jui.ready(null, function () {
                         return 1.2;
                     else
                         return 0.8;
-                }
+                },
+                activeNode: centerKey
             },
             widget: {
                 type: "topologyctrl",

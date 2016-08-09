@@ -11,23 +11,30 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                     $("#topology_modal").css("top", oriTopologyModalHeight + $(document).scrollTop());
                     $("#topology_modal_body").height($("#topology_modal").height() - 65);
 
-
                     topologyLoadingModal.show();
                     $("#relation_content").html("Both <i class='icon-arrow1'></i>");
                     $("#detail_content").html("Classes <i class='icon-arrow1'></i>");
+                    depthSlider.setFromValue(1);
 
                     // ajax로 데이터 요청
-                    var name = ($("#selected_name").html()).split(' ')[2];
+
+                    var name = $("#selected_name").text().trim().replace("#", "*");
+                    var type = "Class";
+                    if (name.split('*').length > 1)
+                        type = "Method";
                     $.ajax({
-                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=Both&detail=Classes&depth=1",
+                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=Both&detail=Classes&depth=1",
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
+                            console.log(result);
+                            name = name.replace("*", "#");
                             var idx;
                             for (idx = 0; idx < result.length; idx++) {
                                 if (result[idx].key == name)
                                     break;
                             }
+                            console.log(idx);
 
                             result[idx] = {
                                 key: result[idx].key,
@@ -40,7 +47,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                                 calledCount: result[idx].calledCount
                             };
 
-                            initTopology(result);
+                            initTopology(result, result[idx].key);
                         },
                         error: function () {
                             console.log("viewTopology 에러");
@@ -116,7 +123,6 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                         }
 
                         index = treeIndex + "." + packIndex;
-                        initTopology();
                     }
 
                     var node = packageTree.get(index);
@@ -150,6 +156,18 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         animate: true
     });
 
+    methodRightClick = function (className, content, signature, e) {
+        e.preventDefault();
+
+        var icon = "<i class='icon-message'></i> ";
+        var methodName = content.innerText;
+        var longName = className + "." + methodName;
+
+        $("#selected_name").html(icon + longName + "#" + signature);
+        dd.move(e.pageX, e.pageY);
+        dd.show();
+    }
+
     function filterNode(index) {
         var splitted = index.split('.');
         var nodes = loadedData;
@@ -179,16 +197,22 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
     loadTopology = function () {
         var relation = $("#relation_content").html().trim().split(' ')[0];
         var detail = $("#detail_content").html().trim().split(' ')[0];
+        var depth = depthSlider.getFromValue();
         console.log(relation);
         console.log(detail);
+        console.log(depth);
 
         topologyLoadingModal.show();
-        var name = ($("#selected_name").html()).split(' ')[2];
+        var name = $("#selected_name").text().trim().replace("#", "*");
+        var type = "Class";
+        if (name.split('*').length > 1)
+            type = "Method";
         $.ajax({
-            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&relation=" + relation + "&detail=" + detail + "&depth=1",
+            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
             type: "GET",
             success: function (result) {
                 console.log("loadTopology 성공");
+                name = name.replace("*", "#");
                 var idx;
                 for (idx = 0; idx < result.length; idx++) {
                     if (result[idx].key == name)
@@ -206,7 +230,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                     calledCount: result[idx].calledCount
                 };
 
-                initTopology(result);
+                initTopology(result, result[idx].key);
             },
             error: function () {
                 console.log("viewTopology 에러");

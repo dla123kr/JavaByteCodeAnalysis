@@ -320,8 +320,8 @@
                             <tr>
                                 <! var methodRowCount = 3 + methods[i].parameters.length +
                                 methods[i].calledMethods.length; !>
-                                <td rowspan="<!= methodRowCount !>">
-                                    <span><!= methods[i].name !></span>
+                                <td rowspan="<!= methodRowCount !>" oncontextmenu="methodRightClick('<!= longName !>', this, '<!= methods[i].signature !>', event); return false;">
+                                    <span style="font-weight: bold;"><!= methods[i].name !></span>
                                 </td>
                                 <td>Access Modifier</td>
                                 <td>

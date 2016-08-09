@@ -4,6 +4,7 @@ import function.HandleJBC;
 import javassist.Modifier;
 import util.NodeType;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 
 public class Node {
@@ -290,6 +291,38 @@ public class Node {
                     if (ret != null)
                         break;
                     ret = findChild(node, name, signature);
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    public AbstractMap.SimpleEntry<Node, Node> findParentAndChild(String name, String signature) {
+        return findParentAndChild(this, name, signature);
+    }
+
+    private AbstractMap.SimpleEntry<Node, Node> findParentAndChild(Node parent, String name, String signature) {
+        AbstractMap.SimpleEntry<Node, Node> ret = null;
+
+        for (Node node : parent.getChildren()) {
+            if (!(node instanceof JBCMethod)) {
+                if (node.getLongName().equals(name)) {
+                    ret = new AbstractMap.SimpleEntry<>(parent, node);
+                    break;
+                } else {
+                    if (ret != null)
+                        break;
+                    ret = findParentAndChild(node, name, signature);
+                }
+            } else {
+                if (node.getLongName().equals(name) && ((JBCMethod) node).getSignature().equals(signature)) {
+                    ret = new AbstractMap.SimpleEntry<>(parent, node);
+                    break;
+                } else {
+                    if (ret != null)
+                        break;
+                    ret = findParentAndChild(node, name, signature);
                 }
             }
         }
