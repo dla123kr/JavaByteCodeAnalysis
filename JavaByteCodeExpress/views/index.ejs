@@ -59,7 +59,8 @@
 
         <div class="navbar" style="margin-top: 5px; background: white;">
             <span>Relation</span>
-            <a id="relation_content" class="btn small" onclick="relationDD.show()" style="width: 100px; text-align: center;">
+            <a id="relation_content" class="btn small" onclick="relationDD.show()"
+               style="width: 100px; text-align: center;">
                 Both
                 <i class="icon-arrow1"></i>
             </a>
@@ -73,7 +74,8 @@
             </div>
 
             <span style="margin-left: 20px;">Detail</span>
-            <a id="detail_content" class="btn small" onclick="detailDD.show()" style="width: 100px; text-align: center;">
+            <a id="detail_content" class="btn small" onclick="detailDD.show()"
+               style="width: 100px; text-align: center;">
                 Classes
                 <i class="icon-arrow1"></i>
             </a>
@@ -89,7 +91,28 @@
             <span style="margin-left: 30px;">Depth</span>
             <div id="depth_slider" class="slider horizontal" style="width: 160px; display: inline-block;"></div>
 
-            <a class="btn focus" style="margin-left: 10px;" onclick="loadTopology()"><i class="icon-refresh"></i></a>
+            <a class="btn focus" style="margin-left: 10px;" onclick="loadTopology(null)"><i class="icon-refresh"></i></a>
+
+            <a class="btn" style="float: right;" onclick="initFilterTree(this, null, null)"><i class="icon-filter"></i></a>
+
+            <div id="filter"
+                 style="position: absolute; z-index: 10010; width: 500px; height: 400px; display: none; padding: 10px;">
+                <div class="window" style="width: 500px; height: 400px;">
+                    <div class="head">
+                        <div class="left">Filter</div>
+                    </div>
+
+                    <div class="body" style="height:280px;">
+                        <ul id="filter_tree" class="tree line"></ul>
+                    </div>
+
+                    <div class="foot">
+                        <a class="btn focus small" onclick="applyFilterTree()">Apply</a>
+                        <a class="btn small" onclick="clearFilterTree()">Clear</a>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -320,7 +343,8 @@
                             <tr>
                                 <! var methodRowCount = 3 + methods[i].parameters.length +
                                 methods[i].calledMethods.length; !>
-                                <td rowspan="<!= methodRowCount !>" oncontextmenu="methodRightClick('<!= longName !>', this, '<!= methods[i].signature !>', event); return false;">
+                                <td rowspan="<!= methodRowCount !>"
+                                    oncontextmenu="methodRightClick('<!= longName !>', this, '<!= methods[i].signature !>', event); return false;">
                                     <span style="font-weight: bold;"><!= methods[i].name !></span>
                                 </td>
                                 <td>Access Modifier</td>
@@ -399,6 +423,22 @@
                 <!= name !>
             </div>
             <ul></ul>
+    </li>
+</script>
+
+<!-- filter_tree의 template -->
+<script data-jui="#filter_tree" data-tpl="node" type="text/template">
+    <li>
+        <div>
+            <input type="checkbox" checked="<!= checked !>" onchange="checkChanged(this)"/>
+            <! if (type == "Package") { !>
+            <i class="icon-document"></i>
+            <! } else { !>
+            <i class="icon-script"></i>
+            <! } !>
+            <!= name !>
+        </div>
+        <ul></ul>
     </li>
 </script>
 

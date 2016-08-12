@@ -38,7 +38,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
 
                             result[idx] = {
                                 key: result[idx].key,
-                                longName: result[0].longName,
+                                longName: result[idx].longName,
                                 name: result[idx].name,
                                 type: result[idx].type,
                                 x: chartWidth / 2,
@@ -48,10 +48,12 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                             };
 
                             initTopology(result, result[idx].key);
+                            initFilterTree(null, result, idx);
                         },
                         error: function () {
                             console.log("viewTopology 에러");
                             initTopology(null);
+                            initFilterTree(null, null, null);
                         },
                         complete: function () {
                             topologyLoadingModal.hide();
@@ -194,7 +196,17 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         return ret;
     }
 
-    loadTopology = function () {
+    loadTopology = function (name) {
+        if (name == null) {
+            var data = topologyChart.axis(0).data;
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].type == "main_class" || data[i].type == "main_method") {
+                    name = data[i].key;
+                    break;
+                }
+            }
+        }
+
         var relation = $("#relation_content").html().trim().split(' ')[0];
         var detail = $("#detail_content").html().trim().split(' ')[0];
         var depth = depthSlider.getFromValue();
@@ -203,7 +215,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         console.log(depth);
 
         topologyLoadingModal.show();
-        var name = $("#selected_name").text().trim().replace("#", "*");
+        name = name.replace("#", "*");
         var type = "Class";
         if (name.split('*').length > 1)
             type = "Method";
@@ -221,7 +233,7 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
 
                 result[idx] = {
                     key: result[idx].key,
-                    longName: result[0].longName,
+                    longName: result[idx].longName,
                     name: result[idx].name,
                     type: result[idx].type,
                     x: chartWidth / 2,
@@ -231,10 +243,12 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                 };
 
                 initTopology(result, result[idx].key);
+                initFilterTree(null, result, idx);
             },
             error: function () {
                 console.log("viewTopology 에러");
                 initTopology(null);
+                initFilterTree(null, null, null);
             },
             complete: function () {
                 topologyLoadingModal.hide();

@@ -386,7 +386,7 @@ public class ViewTopologyController {
                 ret = "private";
                 break;
             default:
-                ret = "unknown";
+                ret = "default";
                 break;
         }
 

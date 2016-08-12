@@ -45,6 +45,37 @@ jui.ready(null, function () {
         }
     });
 
+    var tpl_tooltip =
+        '<div id="topology_tooltip" class="popover popover-top">' +
+        '<div class="head"><!= longName !></div>' +
+        '<div class="body">' +
+        '<div>asdf</div>' +
+        '</div>' +
+        '</div>';
+
+    var isDragging = false;
+
+    function showTopologyTooltip(topology, obj, e) {
+        var title;
+        if (obj.data.type == "package")
+            title = '<i class="icon-document"></i> ';
+        else if (obj.data.type == "class" || obj.data.type == "main_class")
+            title = '<i class="icon-script"></i> ';
+        else
+            title = '<i class="icon-message"></i> ';
+
+        var $tooltip = $(topology.tpl.tooltip({
+            longName: title + obj.data.longName
+        }));
+        $("body").append($tooltip);
+
+        $tooltip.css({
+            "z-index": 10000,
+            left: e.pageX - $tooltip.width() / 2,
+            top: e.pageY - $tooltip.height() - 30
+        });
+    }
+
     initTopology = function (data, centerKey) {
         if (data == null)
             data = [];
@@ -104,6 +135,31 @@ jui.ready(null, function () {
                         return 0.8;
                 },
                 activeNode: centerKey
+            },
+            tpl: {
+                tooltip: tpl_tooltip
+            },
+            event: {
+                mouseover: function (obj, e) {
+                    $("#topology_tooltip").remove();
+                    if (!isDragging) {
+                        showTopologyTooltip(this, obj, e);
+                    }
+                },
+                mousedown: function (obj, e) {
+                    $("#topology_tooltip").remove();
+                    isDragging = true;
+                },
+                mouseup: function (obj, e) {
+                    isDragging = false;
+                    showTopologyTooltip(this, obj, e);
+                },
+                mouseout: function (obj, e) {
+                    $("#topology_tooltip").remove();
+                },
+                dblclick: function (obj, e) {
+                    loadTopology(obj.data.key);
+                }
             },
             widget: {
                 type: "topologyctrl",
