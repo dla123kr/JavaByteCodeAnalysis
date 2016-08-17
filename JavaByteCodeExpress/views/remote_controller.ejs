@@ -1,0 +1,289 @@
+<html>
+<head>
+
+    <title>Remote Controller</title>
+
+    <link rel="stylesheet" href="/jui/dist/ui.min.css"/>
+    <link rel="stylesheet" href="/jui/dist/ui-jennifer.min.css"/>
+    <link rel="stylesheet" href="/jui-grid/dist/grid.min.css"/>
+    <link rel="stylesheet" href="/jui-grid/dist/grid-jennifer.min.css"/>
+
+    <script src="//code.jquery.com/jquery.min.js"></script>
+    <script src="/jui-core/dist/core.min.js"></script>
+    <script src="/jui/dist/ui.min.js"></script>
+    <script src="/jui-grid/dist/grid.min.js"></script>
+    <script src="/jui-chart/dist/chart.min.js"></script>
+
+    <script src="/js/remote_controller_tmp.js"></script>
+    <script src="/js/layout_rc.js"></script>
+    <script src="/js/package_tree.js"></script>
+    <script src="/js/details_table_tmp.js"></script>
+    <script src="/js/loading_modal_rc.js"></script>
+
+</head>
+<body class="jui">
+
+<div id="topology_loading_rc" style="display: none; font-size: 20px;">
+    NOW LOADING... <i class="icon-loading spin" style="font-size: 20px;"></i>
+</div>
+
+<div id="layout_rc" style="border: 1px solid #dcdcdc">
+
+    <div class="left" style="padding: 5px 10px 5px 10px;">
+        <div class="title" style="font-weight: bold;">Package Tree</div>
+        <div>
+            <ul id="package_tree" class="tree line"></ul>
+        </div>
+    </div>
+
+    <div class="center" style="padding: 5px 10px 5px 10px;">
+        <div>
+            <div>
+                <button id="btn-home" style="margin-bottom: 5px; width: 30px; height: 30px;" onclick="toHome()"><i class="icon-home"></i>
+                </button>
+                <button id="btn-up" style="margin-bottom: 5px; swidth: 30px; height: 30px;" onclick="toUp()"><i
+                            class="icon-arrow3"></i>
+                </button>
+            </div>
+
+            <table id="details_table" class="table expand">
+                <thead>
+                <tr>
+                    <th style="width: 30px;"></th>
+                    <th style="text-align: center;">Name</th>
+                </tr>
+                </thead>
+                <tbody style="text-align: center;"></tbody>
+            </table>
+
+            <!-- dropdown -->
+            <div id="details_table_dd" class="dropdown large">
+                <ul style="width: 300px;">
+                    <span id="selected_name">null</span>
+                    <li class="divider"></li>
+                    <li>View Topology</li>
+                    <li>메뉴2</li>
+                    <li>메뉴3</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
+
+<!--**********************************************************************************************************************-->
+
+<!-- details_table의 template -->
+<script data-jui="#details_table" data-tpl="row" type="text/template">
+    <tr>
+        <! if(type == "Package") { !>
+        <td><i class="icon-document"></i></td>
+        <td><!= longName !></td>
+        <! } else { !>
+        <td><i class="icon-left"></i></td>
+        <! if(!isLoaded) { !>
+        <td style="color: red;"><!= longName !></td>
+        <! } else { !>
+        <td><!= longName !></td>
+        <! } !>
+        <! } !>
+    </tr>
+</script>
+
+<script data-jui="#details_table" data-tpl="expand" type="text/template">
+    <div class="row">
+        <div class="group">
+            <span class="h1">
+                <!= longName !>
+            </span>
+            <! if(!isLoaded) { !>
+            <span class="h3" style="color: red;">
+                ( Unloaded )
+            </span>
+            <! } !>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 10px;">
+        <table class="table classic">
+            <thead>
+            <tr>
+                <th style="width: 100px; text-align: center;">Type</th>
+                <th style="text-align: center;">Information</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <! if((superClassName != 'java.lang.Object' && superClassName != null) || interfaceNames.length > 0) { !>
+            <tr>
+                <td style="font-weight: bold">Class</td>
+                <td>
+
+                    <div>
+                        <table class="table simple hover" style="width: 100%;">
+                            <tbody>
+                            <! if(superClassName != 'java.lang.Object' && superClassName != null) { !>
+                            <tr>
+                                <td>SuperClass</td>
+                                <td><!= superClassName !></td>
+                            </tr>
+                            <! } !>
+
+                            <! if(interfaceNames.length > 0) { !>
+                            <tr>
+                                <td rowspan="<!= interfaceNames.length !>">Interfaces</td>
+                                <td><!= interfaceNames[0] !></td>
+                            </tr>
+                            <! for(var i = 1; i < interfaceNames.length; i++) { !>
+                            <tr>
+                                <td><!= interfaceNames[i] !></td>
+                            </tr>
+                            <! } !>
+                            <! } !>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </td>
+            </tr>
+            <! } !>
+
+            <!
+
+            var fields = [];
+            var methods = [];
+            for(var i = 0; i < children.length; i++) {
+            if (children[i].type == "Field") {
+            fields.push(children[i]);
+            } else if (children[i].type == "Method") {
+            methods.push(children[i]);
+            }
+            }
+
+            !>
+
+            <! if(fields.length > 0) { !>
+            <tr>
+                <td style="font-weight: bold">Fields</td>
+                <td>
+
+                    <div>
+                        <table class="table simple hover" style="width: 100%;">
+                            <tbody>
+                            <! for(var i = 0; i < fields.length; i++) { !>
+                            <tr>
+                                <td rowspan="2"><!= fields[i].name !></td>
+                                <td>Access Modifier</td>
+                                <td><!= fields[i].accessModifier !></td>
+                            </tr>
+                            <tr>
+                                <td>Return Type</td>
+                                <td><!= fields[i].returnType !></td>
+                            </tr>
+                            <! } !>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </td>
+            </tr>
+            <! } !>
+
+            <! if(methods.length > 0) { !>
+            <tr>
+                <td style="font-weight: bold">Methods</td>
+                <td>
+
+                    <div>
+                        <table class="table simple hover" style="width: 100%;">
+                            <tbody>
+                            <! for(var i = 0; i < methods.length; i++) { !>
+
+                            <tr>
+                                <! var methodRowCount = 3 + methods[i].parameters.length +
+                                methods[i].calledMethods.length; !>
+                                <td rowspan="<!= methodRowCount !>"
+                                    oncontextmenu="methodRightClick('<!= longName !>', this, '<!= methods[i].signature !>', event); return false;">
+                                    <span style="font-weight: bold;"><!= methods[i].name !></span>
+                                </td>
+                                <td>Access Modifier</td>
+                                <td>
+                                    <! if(methods[i].accessModifier != null) { !>
+                                    <!= methods[i].accessModifier !>
+                                    <! } !>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Return Type</td>
+                                <td>
+                                    <! if (methods[i].returnType != null) { !>
+                                    <!= methods[i].returnType !>
+                                    <! } !>
+                                </td>
+                            </tr>
+
+                            <! if (methods[i].parameters.length > 0) { !>
+                            <tr>
+                                <td rowspan="<!= methods[i].parameters.length !>">Parameters</td>
+                                <td><!= methods[i].parameters[0] !></td>
+                            </tr>
+                            <! for(var j = 1; j < methods[i].parameters.length; j++) { !>
+                            <tr>
+                                <td><!= methods[i].parameters[j] !></td>
+                            </tr>
+                            <! } !>
+                            <! } !>
+
+                            <tr>
+                                <td>Called Count</td>
+                                <td><!= methods[i].calledCount !></td>
+                            </tr>
+
+                            <! if (methods[i].calledMethods.length > 0) { !>
+                            <tr>
+                                <td rowspan="<!= methods[i].calledMethods.length !>">Called Methods</td>
+                                <td><!= methods[i].calledMethods[0].name !></td>
+                            </tr>
+                            <! for (var j = 1; j < methods[i].calledMethods.length; j++) { !>
+                            <tr>
+                                <td><!= methods[i].calledMethods[j].name !></td>
+                            </tr>
+                            <! } !>
+                            <! } !>
+
+                            <! } !>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </td>
+            </tr>
+            <! } !>
+
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<!-- package-tree의 template -->
+<script data-jui="#package_tree" data-tpl="node" type="text/template">
+    <li>
+        <! if(!isLoaded) { !>
+        <div style="color: red;">
+            <! } else { !>
+            <div>
+                <! } !>
+                <! if(type == "Package") { !>
+                <i class="icon-document"></i>
+                <! } else if(type == "Class") { !>
+                <i class="icon-script"></i>
+                <! } !>
+                <!= name !>
+            </div>
+            <ul></ul>
+    </li>
+</script>

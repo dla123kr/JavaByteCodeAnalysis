@@ -4,13 +4,12 @@ jui.ready(["ui.modal"], function (modal) {
     loadingModal = modal("#loading_modal", {
         color: "black",
         autoHide: false
-        
+
     });
     loadingModal.show();
 
-    topologyLoadingModal = modal("#topology_loading_modal", {
-        target: "#topology_modal",
-        color: "white",
+    topologyLoading = modal("#topology_loading", {
+        color: "black",
         autoHide: false
     });
 });

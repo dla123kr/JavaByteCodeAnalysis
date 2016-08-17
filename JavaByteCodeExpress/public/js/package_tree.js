@@ -1,21 +1,9 @@
-jui.ready(["ui.window"], function (win) {
-    remoteController = win("#remote_controller", {
-        width: 300,
-        height: 300,
-        left: "3%",
-        top: 300,
-        resize: true,
-        move: true,
-
-    });
-});
-
 jui.ready(["ui.tree"], function (tree) {
 
     var previousOpenIndex = "-1";
     var previousSelectIndex = "-1";
 
-    packageTree = tree("#package-tree", {
+    packageTree = tree("#package_tree", {
         root: {isLoaded: true, type: "Package", name: "All"},
         event: {
             select: function (node) {
@@ -174,18 +162,4 @@ jui.ready(["ui.tree"], function (tree) {
             }
         }
     }
-});
-
-jui.ready(["ui.switch"], function (button) {
-    switchTree = button("#switch-tree", {
-        checked: true
-    });
-    
-    $("#switch-tree").click(function () {
-        if (!switchTree.getValue()) {
-            remoteController.hide();
-        } else {
-            remoteController.show();
-        }
-    });
 });
