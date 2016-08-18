@@ -216,7 +216,9 @@ public class ViewTopologyController {
      * @param endDepth
      */
     private void connectOutgoingEdgeFromNotMethodToNotMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode rootTopologyNode, String rootType, TopologyNode startTopologyNode, String startType, int detailType, String hash, int curDepth, int endDepth) {
-        // TODO: 2016-08-09 수정해야함 NotMethod로
+        if (mainNode == null)
+            return;
+
         if (mainNode.getType().equals("Class")) {
             for (Node node : mainNode.getChildren()) {
                 if (node.getType().equals("Method")) {
@@ -280,7 +282,7 @@ public class ViewTopologyController {
             TopologyNode calledTN = null;
             if (topologyNodeHashtable.containsKey(chkStartKey)) {
                 calledTN = topologyNodeHashtable.get(chkStartKey);
-                if(calledTN.getDepth() < curDepth + 1)
+                if (calledTN.getDepth() < curDepth + 1)
                     calledTN.setDepth(curDepth + 1);
                 // calledTN.increaseCalledCount();
             } else {
@@ -341,7 +343,7 @@ public class ViewTopologyController {
             TopologyNode calledTN = null;
             if (topologyNodeHashtable.containsKey(calledMethodKey)) {
                 calledTN = topologyNodeHashtable.get(calledMethodKey);
-                if(calledTN.getDepth() < curDepth + 1)
+                if (calledTN.getDepth() < curDepth + 1)
                     calledTN.setDepth(curDepth + 1);
 //                calledTN.increaseCalledCount();
 

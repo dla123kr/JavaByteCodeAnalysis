@@ -306,6 +306,9 @@ public class Node {
         AbstractMap.SimpleEntry<Node, Node> ret = null;
 
         for (Node node : parent.getChildren()) {
+            if (node instanceof JBCField)
+                continue;
+
             if (!(node instanceof JBCMethod)) {
                 if (node.getLongName().equals(name)) {
                     ret = new AbstractMap.SimpleEntry<>(parent, node);
