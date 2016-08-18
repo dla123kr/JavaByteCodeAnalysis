@@ -18,29 +18,31 @@
     <script src="/jui/dist/ui.min.js"></script>
     <script src="/jui-grid/dist/grid.min.js"></script>
     <script src="/jui-chart/dist/chart.min.js"></script>
+    <script src="/js/custom/topologynode2.js"></script>
 
     <!-- it's mine -->
-    <script>
-    </script>
     <script src="/js/controller.js"></script>
-    <script src="/js/details_table.js"></script>
-    <script src="/js/remote_controller.js"></script>
-    <!--<script src="/js/project-tab.js"></script>-->
     <script src="/js/loading_modal.js"></script>
-    <script src="/js/topology_modal.js"></script>
     <script src="/js/topology.js"></script>
+
+    <script type="text/javascript">
+        openRemoteController = function () {
+            remoteController = window.open("/rc", "Remote Controller",
+                    "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=1, width=1200, height=800");
+        }
+    </script>
 </head>
 <body class="jui">
 
-<header class="navbar fixed top" style="background: #2B3340; height: 75px;">
+<header class="navbar fixed top" style="background: #2B3340; height: 75px; z-index: 10001;">
     <div class="center" style="position: relative;">
-                <span>
-                    <a style="cursor: pointer;" onclick="location.href='/'">
-                        <i class="icon icon-analysis" style="font-size: 50px; color: white; margin-top: 7px;">
-                            <span style="font-family: Consolas; font-size: 40px;"> JavaByteCode Analysis</span>
-                        </i>
-                    </a>
-                </span>
+        <span>
+            <a style="cursor: pointer;" onclick="location.href='/'">
+                <i class="icon icon-analysis" style="font-size: 50px; color: white; margin-top: 7px;">
+                    <span style="font-family: Consolas; font-size: 40px;"> JavaByteCode Analysis</span>
+                </i>
+            </a>
+        </span>
     </div>
 </header>
 
@@ -53,93 +55,19 @@
     </div>
 </div>
 
-<div id="topology_modal" class="msgbox" style="display: none; width: 1500px; height: 850px;">
-    <div id="topology_modal_head" class="head">
-        Topology
-
-        <div class="navbar" style="margin-top: 5px; background: white;">
-            <span>Relation</span>
-            <a id="relation_content" class="btn small" onclick="relationDD.show()"
-               style="width: 100px; text-align: center;">
-                Both
-                <i class="icon-arrow1"></i>
-            </a>
-            <div id="relation_dd" class="dropdown" style="left: 80px;">
-                <div class="anchor" style="left: 20px;"></div>
-                <ul style="width: 100px;">
-                    <li>Both</li>
-                    <li>Outgoing</li>
-                    <li>Ingoing</li>
-                </ul>
-            </div>
-
-            <span style="margin-left: 20px;">Detail</span>
-            <a id="detail_content" class="btn small" onclick="detailDD.show()"
-               style="width: 100px; text-align: center;">
-                Classes
-                <i class="icon-arrow1"></i>
-            </a>
-            <div id="detail_dd" class="dropdown" style="left: 240px;">
-                <div class="anchor" style="left: 20px;"></div>
-                <ul style="width: 100px;">
-                    <li>Methods</li>
-                    <li>Classes</li>
-                    <li>Packages</li>
-                </ul>
-            </div>
-
-            <span style="margin-left: 30px;">Depth</span>
-            <div id="depth_slider" class="slider horizontal" style="width: 160px; display: inline-block;"></div>
-
-            <a class="btn focus" style="margin-left: 10px;" onclick="loadTopology(null)"><i class="icon-refresh"></i></a>
-
-            <a class="btn" style="float: right;" onclick="initFilterTree(this, null, null)"><i class="icon-filter"></i></a>
-
-            <div id="filter"
-                 style="position: absolute; z-index: 10010; width: 500px; height: 400px; display: none; padding: 10px;">
-                <div class="window" style="width: 500px; height: 400px;">
-                    <div class="head">
-                        <div class="left">Filter</div>
-                    </div>
-
-                    <div class="body" style="height:280px;">
-                        <ul id="filter_tree" class="tree line"></ul>
-                    </div>
-
-                    <div class="foot">
-                        <a class="btn focus small" onclick="applyFilterTree()">Apply</a>
-                        <a class="btn small" onclick="clearFilterTree()">Clear</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-    <div id="topology_modal_body" class="body">
-        <div id="topology" style="width: 1480px; height: 785px">
-
-        </div>
-    </div>
+<div id="topology_loading" style="display: none; font-size: 20px;">
+    NOW LOADING... <i class="icon-loading spin" style="font-size: 20px;"></i>
 </div>
 
-<div id="topology_loading_modal" style="display: none; font-size: 20px;">
-    NOW LOADING... <i class="icon-loading spin" style="font-size: 20px;"></i>
+<div id="history_tooltip" class="popover" style="display: none; z-index: 10000;">
+    <div class="head"></div>
+    <div class="body"></div>
 </div>
 
 <section class="horizontal-main">
 
-    <!--<div id="css-project-tab">-->
-    <!--<ul id="project-tab" class="tab top">-->
-    <!--<li class="active"><a href="#" style="width: 50px;">0</a></li>-->
-    <!--<span id="btn_add_project" class="btn focus" style="float: left; margin-top: 4px;" onclick="insertTab()"><i class="icon-plus"></i></span>-->
-    <!--<span id="btn_clear_project" class="btn" style="float: right; margin-top: 4px;" onclick="alert(1)"><i class="icon-trashcan"></i></span>-->
-    <!--</ul>-->
-    <!--</div>-->
-
     <div class="vertical-main">
-        <!--<div class="h1" style="margin-bottom: 10px; font-style: italic; font-weight: bold;">Project # <span-->
-        <!--id="project_num">0</span></div>-->
+
         <div class="h2" style="margin-bottom:10px;">분석할 파일을 선택하세요.
             <small>*.class, *.jar</small>
         </div>
@@ -150,281 +78,105 @@
             <input id="hiddenHash" name="hiddenHash" type="hidden" value="<%= hash %>"/>
         </form>
         <br/>
+
+        <a class="btn" style="font-size: 17px;" onclick="openRemoteController()"><i class="icon-profile"></i> Remote
+            Controller</a>
+
         <hr/>
+
     </div>
 
-    <div id="content-main">
+    <div id="topology_div" style="display: none; position: absolute; left: 18%; top: 28%;">
 
-        <p>
-        <div id="remote_controller" class="window" style="text-align: left;">
+        <div id="topology_msgbox" class="msgbox" style="width: 1200px; height: 100px; margin-bottom: 30px;">
             <div class="head">
-                <div class="left">Package Tree</div>
-                <div class="right">
-                    <a href="#" class="close" onclick="switchTree.setValue(false)"><i class="icon-exit"></i></a>
+                Topology
+
+                <div class="navbar" style="text-align: left; margin-top: 5px; background: white;">
+                    <span>Relation</span>
+                    <a id="relation_content" class="btn small" onclick="relationDD.show()"
+                       style="width: 100px; text-align: center;">
+                        Both
+                        <i class="icon-arrow1"></i>
+                    </a>
+                    <div id="relation_dd" class="dropdown" style="left: 80px;">
+                        <div class="anchor" style="left: 20px;"></div>
+                        <ul style="width: 100px;">
+                            <li>Both</li>
+                            <li>Outgoing</li>
+                            <li>Ingoing</li>
+                        </ul>
+                    </div>
+
+                    <span style="margin-left: 20px;">Detail</span>
+                    <a id="detail_content" class="btn small" onclick="detailDD.show()"
+                       style="width: 100px; text-align: center;">
+                        Methods
+                        <i class="icon-arrow1"></i>
+                    </a>
+                    <div id="detail_dd" class="dropdown" style="left: 240px;">
+                        <div class="anchor" style="left: 20px;"></div>
+                        <ul style="width: 100px;">
+                            <li>Methods</li>
+                            <li>Classes</li>
+                            <li>Packages</li>
+                        </ul>
+                    </div>
+
+                    <span style="margin-left: 30px;">Depth</span>
+                    <div id="depth_slider" class="slider horizontal" style="width: 160px; display: inline-block;"></div>
+
+                    <a class="btn focus" title="Topology의 속성을 변경합니다." style="margin-left: 10px;"
+                       onclick="loadTopology(null)"><i
+                                class="icon-refresh"></i></a>
+
+                    <a class="btn" style="float: right;" onclick="initFilterTree(this, null, null)"><i
+                                class="icon-filter"></i></a>
+
+                    <div id="filter"
+                         style="position: absolute; z-index: 10010; width: 500px; height: 400px; display: none; padding: 10px;">
+                        <div class="window" style="width: 500px; height: 400px;">
+                            <div class="head">
+                                <div class="left">Filter</div>
+                            </div>
+
+                            <div class="body" style="height:280px;">
+                                <ul id="filter_tree" class="tree line"></ul>
+                            </div>
+
+                            <div class="foot">
+                                <a class="btn focus small" onclick="applyFilterTree()">Apply</a>
+                                <a class="btn small" onclick="clearFilterTree()">Clear</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="history_nav" class="navbar" style="text-align: left; margin-top: 5px; background: white;">
+                    <span style="margin-right: 10px;">History</span>
+                    <span id="history_span"></span>
+                    <a class="btn small" title="History를 초기화합니다." style="float: right;" onclick="clearHistory();"><i class="icon-exit"></i></a>
+
                 </div>
             </div>
 
-            <div class="body">
-                <ul id="package-tree" class="tree line"></ul>
+            <div id="topology_body" class="body">
+
+                <div id="topology" style="width: 1150px; height: 100px;">
+                    bbbb
+                </div>
+
             </div>
         </div>
-        </p>
 
-        <!--<p>-->
-        <!--<div id="topology">-->
-
-        <!--</div>-->
-        <!--</p>-->
-        <!--<hr/>-->
-
-        <p>
-        <div style="margin-right: 880px;">
-            <button id="btn-home" style="margin-bottom: 20px; width: 30px; height: 30px;"><i class="icon-home"></i>
-            </button>
-            <button id="btn-up" style="margin-bottom: 20px; swidth: 30px; height: 30px; ;"><i class="icon-arrow3"></i>
-            </button>
-            <div id="switch-tree" class="switch inner" style="margin-bottom: 0px;"></div>
-        </div>
-
-        <table id="details_table" class="table expand">
-            <thead>
-            <tr>
-                <th style="width: 30px;"></th>
-                <th style="text-align: center;">Name</th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <!-- dropdown -->
-        <div id="details_table_dd" class="dropdown large">
-            <ul style="width: 300px;">
-                <span id="selected_name">null</span>
-                <li class="divider"></li>
-                <li>View Topology</li>
-                <li>메뉴2</li>
-                <li>메뉴3</li>
-            </ul>
-        </div>
-
-        </p>
     </div>
+
 </section>
+
 </body>
 </html>
 
 <!--**********************************************************************************************************************-->
-
-<!-- details_table의 template -->
-<script data-jui="#details_table" data-tpl="row" type="text/template">
-    <tr>
-        <! if(type == "Package") { !>
-        <td><i class="icon-document"></i></td>
-        <td><!= longName !></td>
-        <! } else { !>
-        <td><i class="icon-left"></i></td>
-        <! if(!isLoaded) { !>
-        <td style="color: red;"><!= longName !></td>
-        <! } else { !>
-        <td><!= longName !></td>
-        <! } !>
-        <! } !>
-    </tr>
-</script>
-
-<script data-jui="#details_table" data-tpl="expand" type="text/template">
-    <div class="row">
-        <div class="group">
-            <span class="h1">
-                <!= longName !>
-            </span>
-            <! if(!isLoaded) { !>
-            <span class="h3" style="color: red;">
-                ( Unloaded )
-            </span>
-            <! } !>
-        </div>
-    </div>
-    <div class="row" style="margin-top: 10px;">
-        <table class="table classic">
-            <thead>
-            <tr>
-                <th style="width: 100px; text-align: center;">Type</th>
-                <th style="text-align: center;">Information</th>
-            </tr>
-            </thead>
-            <tbody>
-
-            <! if((superClassName != 'java.lang.Object' && superClassName != null) || interfaceNames.length > 0) { !>
-            <tr>
-                <td style="font-weight: bold">Class</td>
-                <td>
-
-                    <div>
-                        <table class="table simple hover" style="width: 100%;">
-                            <tbody>
-                            <! if(superClassName != 'java.lang.Object' && superClassName != null) { !>
-                            <tr>
-                                <td>SuperClass</td>
-                                <td><!= superClassName !></td>
-                            </tr>
-                            <! } !>
-
-                            <! if(interfaceNames.length > 0) { !>
-                            <tr>
-                                <td rowspan="<!= interfaceNames.length !>">Interfaces</td>
-                                <td><!= interfaceNames[0] !></td>
-                            </tr>
-                            <! for(var i = 1; i < interfaceNames.length; i++) { !>
-                            <tr>
-                                <td><!= interfaceNames[i] !></td>
-                            </tr>
-                            <! } !>
-                            <! } !>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </td>
-            </tr>
-            <! } !>
-
-            <!
-
-            var fields = [];
-            var methods = [];
-            for(var i = 0; i < children.length; i++) {
-            if (children[i].type == "Field") {
-            fields.push(children[i]);
-            } else if (children[i].type == "Method") {
-            methods.push(children[i]);
-            }
-            }
-
-            !>
-
-            <! if(fields.length > 0) { !>
-            <tr>
-                <td style="font-weight: bold">Fields</td>
-                <td>
-
-                    <div>
-                        <table class="table simple hover" style="width: 100%;">
-                            <tbody>
-                            <! for(var i = 0; i < fields.length; i++) { !>
-                            <tr>
-                                <td rowspan="2"><!= fields[i].name !></td>
-                                <td>Access Modifier</td>
-                                <td><!= fields[i].accessModifier !></td>
-                            </tr>
-                            <tr>
-                                <td>Return Type</td>
-                                <td><!= fields[i].returnType !></td>
-                            </tr>
-                            <! } !>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </td>
-            </tr>
-            <! } !>
-
-            <! if(methods.length > 0) { !>
-            <tr>
-                <td style="font-weight: bold">Methods</td>
-                <td>
-
-                    <div>
-                        <table class="table simple hover" style="width: 100%;">
-                            <tbody>
-                            <! for(var i = 0; i < methods.length; i++) { !>
-
-                            <tr>
-                                <! var methodRowCount = 3 + methods[i].parameters.length +
-                                methods[i].calledMethods.length; !>
-                                <td rowspan="<!= methodRowCount !>"
-                                    oncontextmenu="methodRightClick('<!= longName !>', this, '<!= methods[i].signature !>', event); return false;">
-                                    <span style="font-weight: bold;"><!= methods[i].name !></span>
-                                </td>
-                                <td>Access Modifier</td>
-                                <td>
-                                    <! if(methods[i].accessModifier != null) { !>
-                                    <!= methods[i].accessModifier !>
-                                    <! } !>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>Return Type</td>
-                                <td>
-                                    <! if (methods[i].returnType != null) { !>
-                                    <!= methods[i].returnType !>
-                                    <! } !>
-                                </td>
-                            </tr>
-
-                            <! if (methods[i].parameters.length > 0) { !>
-                            <tr>
-                                <td rowspan="<!= methods[i].parameters.length !>">Parameters</td>
-                                <td><!= methods[i].parameters[0] !></td>
-                            </tr>
-                            <! for(var j = 1; j < methods[i].parameters.length; j++) { !>
-                            <tr>
-                                <td><!= methods[i].parameters[j] !></td>
-                            </tr>
-                            <! } !>
-                            <! } !>
-
-                            <tr>
-                                <td>Called Count</td>
-                                <td><!= methods[i].calledCount !></td>
-                            </tr>
-
-                            <! if (methods[i].calledMethods.length > 0) { !>
-                            <tr>
-                                <td rowspan="<!= methods[i].calledMethods.length !>">Called Methods</td>
-                                <td><!= methods[i].calledMethods[0].name !></td>
-                            </tr>
-                            <! for (var j = 1; j < methods[i].calledMethods.length; j++) { !>
-                            <tr>
-                                <td><!= methods[i].calledMethods[j].name !></td>
-                            </tr>
-                            <! } !>
-                            <! } !>
-
-                            <! } !>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </td>
-            </tr>
-            <! } !>
-
-            </tbody>
-        </table>
-    </div>
-</script>
-
-<!-- package-tree의 template -->
-<script data-jui="#package-tree" data-tpl="node" type="text/template">
-    <li>
-        <! if(!isLoaded) { !>
-        <div style="color: red;">
-            <! } else { !>
-            <div>
-                <! } !>
-                <! if(type == "Package") { !>
-                <i class="icon-document"></i>
-                <! } else if(type == "Class") { !>
-                <i class="icon-script"></i>
-                <! } !>
-                <!= name !>
-            </div>
-            <ul></ul>
-    </li>
-</script>
 
 <!-- filter_tree의 template -->
 <script data-jui="#filter_tree" data-tpl="node" type="text/template">

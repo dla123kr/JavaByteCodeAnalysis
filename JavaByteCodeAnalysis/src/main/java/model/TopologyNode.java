@@ -9,6 +9,8 @@ public class TopologyNode {
     private String type;
     private int calledCount;
     private ArrayList<String> outgoing = new ArrayList<>();
+    private int depth;
+    private boolean isOnlyIngoing;
 
     public TopologyNode(Node node, String type) {
         if (node != null) {
@@ -23,6 +25,8 @@ public class TopologyNode {
         this.type = type;
 
         this.calledCount = 0;
+        this.depth = -1;
+        this.isOnlyIngoing = true;
     }
 
     public String getKey() {
@@ -75,5 +79,21 @@ public class TopologyNode {
 
     public void setOutgoing(ArrayList<String> outgoing) {
         this.outgoing = outgoing;
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public boolean getIsOnlyIngoing() {
+        return isOnlyIngoing;
+    }
+
+    public void setIsOnlyIngoing(boolean isOnlyIngoing) {
+        this.isOnlyIngoing = isOnlyIngoing;
     }
 }

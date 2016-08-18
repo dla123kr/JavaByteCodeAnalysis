@@ -24,4 +24,8 @@ router.get('/', function (req, res, next) {
     res.render('index', {title: 'JavaByteCode Analysis', hash: hash});
 });
 
+router.get('/rc', function (req, res) {
+    res.render('remote_controller', null);
+});
+
 module.exports = router;

@@ -62,6 +62,7 @@ public class ViewTopologyController {
 
         String mainType = signature == null ? "main_class" : "main_method";
         TopologyNode main = new TopologyNode(mainNode, mainType); // 중심은 무조건 Class로 제한 ?
+        main.setDepth(0);
         topologyNodeHashtable.put(main.getKey(), main);
 
         // 중심지의 클래스를 부르는 수를 셈
@@ -215,7 +216,9 @@ public class ViewTopologyController {
      * @param endDepth
      */
     private void connectOutgoingEdgeFromNotMethodToNotMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode rootTopologyNode, String rootType, TopologyNode startTopologyNode, String startType, int detailType, String hash, int curDepth, int endDepth) {
-        // TODO: 2016-08-09 수정해야함 NotMethod로
+        if (mainNode == null)
+            return;
+
         if (mainNode.getType().equals("Class")) {
             for (Node node : mainNode.getChildren()) {
                 if (node.getType().equals("Method")) {
@@ -279,6 +282,8 @@ public class ViewTopologyController {
             TopologyNode calledTN = null;
             if (topologyNodeHashtable.containsKey(chkStartKey)) {
                 calledTN = topologyNodeHashtable.get(chkStartKey);
+                if (calledTN.getDepth() < curDepth + 1)
+                    calledTN.setDepth(curDepth + 1);
                 // calledTN.increaseCalledCount();
             } else {
                 Node findedNode = null;
@@ -290,12 +295,14 @@ public class ViewTopologyController {
 
                 String type = detailType == NodeType.PACKAGE ? "package" : "class";
                 calledTN = new TopologyNode(findedNode, type);
+                calledTN.setDepth(curDepth + 1);
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
 
                 // TODO: 2016-08-09 추가 depth 진행
                 connectOutgoingEdgeFromNotMethodToNotMethods(topologyNodeHashtable, findedNode, rootTopologyNode, rootType, calledTN, type, detailType, hash, curDepth + 1, endDepth);
             }
             startTopologyNode.getOutgoing().add(chkStartKey);
+            calledTN.setIsOnlyIngoing(false);
         }
     }
 
@@ -336,6 +343,8 @@ public class ViewTopologyController {
             TopologyNode calledTN = null;
             if (topologyNodeHashtable.containsKey(calledMethodKey)) {
                 calledTN = topologyNodeHashtable.get(calledMethodKey);
+                if (calledTN.getDepth() < curDepth + 1)
+                    calledTN.setDepth(curDepth + 1);
 //                calledTN.increaseCalledCount();
 
                 // TODO: 2016-08-08 이미 있을 땐 어떡하지 ?
@@ -350,12 +359,14 @@ public class ViewTopologyController {
                 JBCMethod findedJBCMethod = (JBCMethod) parentAndChild.getValue();
 
                 calledTN = new TopologyNode(findedJBCMethod, filterAccessModifier(findedJBCMethod.getAccessModifier(), findedJBCMethod, findedJBCClass));
+                calledTN.setDepth(curDepth + 1);
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
 
                 // TODO: 2016-08-08 추가 depth 진행?????
                 connectOutgoingEdgeFromMethodToMethods(topologyNodeHashtable, findedJBCMethod, rootTopologyNode, rootType, calledTN, "method", hash, curDepth + 1, endDepth);
             }
             startTopologyNode.getOutgoing().add(calledMethodKey);
+            calledTN.setIsOnlyIngoing(false);
         }
     }
 

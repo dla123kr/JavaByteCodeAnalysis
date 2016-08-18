@@ -14,10 +14,9 @@ $(document).ready(function () {
 
             loadedData = result;
             filterPackagesAndClassesAtRoot(loadedData);
-            constructTables(loadedData);
-            constructTree(loadedData);
 
             loadingModal.hide();
+            openRemoteController();
         },
         error: function (req, status, err) {
             console.log(this.data);
@@ -43,8 +42,8 @@ $(document).ready(function () {
                 console.log(result);
                 loadedData = result;
                 filterPackagesAndClassesAtRoot(loadedData);
-                constructTables(loadedData);
-                constructTree(loadedData);
+
+                openRemoteController();
             },
             error: function (req, status, err) {
                 alert("fileUpload 실패");
@@ -68,33 +67,6 @@ $(document).ready(function () {
             }
         });
     });
-
-    function constructTree(nodes) {
-        packageTree.uit.removeNodes();
-
-        // nodes에는 (default)와 각종 Package들이 있음
-        for (var i = 0; i < nodes.length; i++) {
-            var node = nodes[i];
-
-            packageTree.append({isLoaded: true, type: "Package", name: node.name});
-
-            // (default)와 각종 Package안에 추가로 패키지가 있다면, #dump를 추가해서 +버튼을 만들자
-            if (node.packages.length > 0)
-                packageTree.append(i, {isLoaded: true, type: "Class", name: "#dump"});
-        }
-
-        packageTree.foldAll();
-        packageTree.open();
-        packageTree.select(null);
-
-        remoteController.show();
-        console.log(packageTree);
-    }
-
-    function constructTables(classes) {
-        // 업데이트를 하자
-        detailsTable.update(classes);
-    };
 
     function filterPackagesAndClassesAtRoot(nodes) {
         for (var i = 0; i < nodes.length; i++) {

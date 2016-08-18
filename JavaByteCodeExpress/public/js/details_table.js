@@ -1,20 +1,15 @@
-jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider, table) {
+var dd;
 
-    var dd = dropdown("#details_table_dd", {
+jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
+
+    dd = dropdown("#details_table_dd", {
         event: {
             change: function (data) {
                 if (data.text == "View Topology") {
-                    // topologyModal 위치
-                    topologyModal.show();
-                    if (oriTopologyModalHeight == null)
-                        oriTopologyModalHeight = parseInt($("#topology_modal").css("top"));
-                    $("#topology_modal").css("top", oriTopologyModalHeight + $(document).scrollTop());
-                    $("#topology_modal_body").height($("#topology_modal").height() - 65);
-
-                    topologyLoadingModal.show();
-                    $("#relation_content").html("Both <i class='icon-arrow1'></i>");
-                    $("#detail_content").html("Classes <i class='icon-arrow1'></i>");
-                    depthSlider.setFromValue(1);
+                    // 토폴로지 조종
+                    // loading modal 양쪽 다 띄워야함
+                    window.opener.topologyLoading.show();
+                    topologyLoadingAtRC.show();
 
                     // ajax로 데이터 요청
 
@@ -22,8 +17,11 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                     var type = "Class";
                     if (name.split('*').length > 1)
                         type = "Method";
+                    var relation = window.opener.$("#relation_content").html().trim().split(' ')[0];
+                    var detail = window.opener.$("#detail_content").html().trim().split(' ')[0];
+                    var depth = isNaN(window.opener.depthSlider.getFromValue()) ? 1 : window.opener.depthSlider.getFromValue();
                     $.ajax({
-                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=Both&detail=Classes&depth=1",
+                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
@@ -34,58 +32,23 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
                                 if (result[idx].key == name)
                                     break;
                             }
-                            console.log(idx);
 
-                            result[idx] = {
-                                key: result[idx].key,
-                                longName: result[idx].longName,
-                                name: result[idx].name,
-                                type: result[idx].type,
-                                x: chartWidth / 2,
-                                y: chartHeight / 2,
-                                outgoing: result[idx].outgoing,
-                                calledCount: result[idx].calledCount
-                            };
+                            window.opener.initTopology(result, idx);
+                            window.opener.initFilterTree(null, result, idx);
 
-                            initTopology(result, result[idx].key);
-                            initFilterTree(null, result, idx);
+                            window.opener.$("#topology_div").css('display', 'block');
                         },
                         error: function () {
                             console.log("viewTopology 에러");
-                            initTopology(null);
-                            initFilterTree(null, null, null);
+                            window.opener.initTopology(null, null);
+                            window.opener.initFilterTree(null, null, null);
                         },
                         complete: function () {
-                            topologyLoadingModal.hide();
+                            window.opener.topologyLoading.hide();
+                            topologyLoadingAtRC.hide();
                         }
                     });
                 }
-            }
-        }
-    });
-
-    relationDD = dropdown("#relation_dd", {
-        event: {
-            change: function (data) {
-                $("#relation_content").html(data.text + " <i class='icon-arrow1'></i>");
-            }
-        }
-    });
-
-    depthSlider = slider("#depth_slider", {
-        type: "single",
-        orient: "horizontal",
-        tooltip: false,
-        from: 1,
-        min: 1,
-        max: 5,
-        step: 1
-    });
-
-    detailDD = dropdown("#detail_dd", {
-        event: {
-            change: function (data) {
-                $("#detail_content").html(data.text + " <i class='icon-arrow1'></i>");
             }
         }
     });
@@ -142,14 +105,17 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
             },
             rowmenu: function (row, e) {
                 var icon;
-                if (row.data.type == "Package")
+                if (row.data.type == "Package") {
                     icon = "<i class='icon-document'></i> "
-                else if (row.data.type == "Class")
+                    $("#view_topology").css('display', 'none');
+                } else if (row.data.type == "Class") {
                     icon = "<i class='icon-script'></i> "
+                    $("#view_topology").css('display', 'block');
+                }
 
                 this.select(row.index);
                 $("#selected_name").html(icon + row.data.longName);
-                dd.move(e.pageX, e.pageY);
+                dd.move(e.pageX - layoutRC.options.left.size, e.pageY + $("#center_div").scrollTop());
                 dd.show();
             }
         },
@@ -158,148 +124,91 @@ jui.ready(["ui.dropdown", "ui.slider", "grid.table"], function (dropdown, slider
         animate: true
     });
 
-    methodRightClick = function (className, content, signature, e) {
-        e.preventDefault();
-
-        var icon = "<i class='icon-message'></i> ";
-        var methodName = content.innerText;
-        var longName = className + "." + methodName;
-
-        $("#selected_name").html(icon + longName + "#" + signature);
-        dd.move(e.pageX, e.pageY);
-        dd.show();
-    }
-
-    function filterNode(index) {
-        var splitted = index.split('.');
-        var nodes = loadedData;
-
-        for (var i = 0; i < splitted.length; i++) {
-            if (nodes == loadedData) {
-                nodes = nodes[splitted[i]];
-            }
-            else {
-                nodes = nodes.packages[splitted[i]];
-            }
-        }
-
-        var ret = [];
-
-        for (var i = 0; i < nodes.children.length; i++) {
-            var node = nodes.children[i];
-
-            if (node.type == "Package" || node.type == "Class") {
-                ret.push(node);
-            }
-        }
-
-        return ret;
-    }
-
-    loadTopology = function (name) {
-        if (name == null) {
-            var data = topologyChart.axis(0).data;
-            for (var i = 0; i < data.length; i++) {
-                if (data[i].type == "main_class" || data[i].type == "main_method") {
-                    name = data[i].key;
-                    break;
-                }
-            }
-        }
-
-        var relation = $("#relation_content").html().trim().split(' ')[0];
-        var detail = $("#detail_content").html().trim().split(' ')[0];
-        var depth = depthSlider.getFromValue();
-        console.log(relation);
-        console.log(detail);
-        console.log(depth);
-
-        topologyLoadingModal.show();
-        name = name.replace("#", "*");
-        var type = "Class";
-        if (name.split('*').length > 1)
-            type = "Method";
-        $.ajax({
-            url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
-            type: "GET",
-            success: function (result) {
-                console.log("loadTopology 성공");
-                name = name.replace("*", "#");
-                var idx;
-                for (idx = 0; idx < result.length; idx++) {
-                    if (result[idx].key == name)
-                        break;
-                }
-
-                result[idx] = {
-                    key: result[idx].key,
-                    longName: result[idx].longName,
-                    name: result[idx].name,
-                    type: result[idx].type,
-                    x: chartWidth / 2,
-                    y: chartHeight / 2,
-                    outgoing: result[idx].outgoing,
-                    calledCount: result[idx].calledCount
-                };
-
-                initTopology(result, result[idx].key);
-                initFilterTree(null, result, idx);
-            },
-            error: function () {
-                console.log("viewTopology 에러");
-                initTopology(null);
-                initFilterTree(null, null, null);
-            },
-            complete: function () {
-                topologyLoadingModal.hide();
-            }
-        });
-    }
-
-    $("#btn-home").click(function () {
-        if (detailsTable.activeIndex() != null)
-            detailsTable.unselect();
-
-        packageTree.uit.removeNodes();
-
-        // loadedData에는 (default)와 각종 Package들이 있음
-        for (var i = 0; i < loadedData.length; i++) {
-            var node = loadedData[i];
-
-            packageTree.append({isLoaded: true, type: "Package", name: node.name});
-
-            // (default)와 각종 Package안에 추가로 패키지가 있다면, #dump를 추가해서 +버튼을 만들자
-            if (node.packages.length > 0)
-                packageTree.append(i, {isLoaded: true, type: "Class", name: "#dump"});
-        }
-
-        packageTree.foldAll();
-        packageTree.open();
-        packageTree.select(null);
-
-        detailsTable.update(loadedData);
-    });
-
-    $("#btn-up").click(function () {
-        if (detailsTable.activeIndex() != null)
-            detailsTable.unselect();
-
-        var treeIndex = packageTree.activeIndex();
-        if (treeIndex == null || treeIndex == undefined)
-            return;
-
-        var splitted = treeIndex.split('.');
-        if (splitted.length == 1)
-            $("#btn-home").trigger('click');
-        else {
-            var suffix = splitted[splitted.length - 1];
-            var index = treeIndex.substring(0, treeIndex.length - suffix.length - 1);
-
-            var node = packageTree.get(index);
-            var datas = filterNode(node.index);
-            detailsTable.update(datas);
-
-            packageTree.select(node.index);
-        }
-    });
 });
+
+methodRightClick = function (className, content, signature, e) {
+    e.preventDefault();
+
+    var icon = "<i class='icon-message'></i> ";
+    var methodName = content.innerText;
+    var longName = className + "." + methodName;
+
+    $("#view_topology").css('display', 'block');
+
+    $("#selected_name").html(icon + longName + "#" + signature);
+    dd.move(e.pageX - layoutRC.options.left.size, e.pageY + $("#center_div").scrollTop());
+    dd.show();
+}
+
+function toHome() {
+    if (detailsTable.activeIndex() != null)
+        detailsTable.unselect();
+
+    packageTree.uit.removeNodes();
+
+    // loadedData에는 (default)와 각종 Package들이 있음
+    for (var i = 0; i < loadedData.length; i++) {
+        var node = loadedData[i];
+
+        packageTree.append({isLoaded: true, type: "Package", name: node.name});
+
+        // (default)와 각종 Package안에 추가로 패키지가 있다면, #dump를 추가해서 +버튼을 만들자
+        if (node.packages.length > 0)
+            packageTree.append(i, {isLoaded: true, type: "Class", name: "#dump"});
+    }
+
+    packageTree.foldAll();
+    packageTree.open();
+    packageTree.select(null);
+
+    detailsTable.update(loadedData);
+}
+
+function toUp() {
+    if (detailsTable.activeIndex() != null)
+        detailsTable.unselect();
+
+    var treeIndex = packageTree.activeIndex();
+    if (treeIndex == null || treeIndex == undefined)
+        return;
+
+    var splitted = treeIndex.split('.');
+    if (splitted.length == 1)
+        $("#btn-home").trigger('click');
+    else {
+        var suffix = splitted[splitted.length - 1];
+        var index = treeIndex.substring(0, treeIndex.length - suffix.length - 1);
+
+        var node = packageTree.get(index);
+        var datas = filterNode(node.index);
+        detailsTable.update(datas);
+
+        packageTree.select(node.index);
+    }
+}
+
+function filterNode(index) {
+    var splitted = index.split('.');
+    var nodes = loadedData;
+
+    for (var i = 0; i < splitted.length; i++) {
+        if (nodes == loadedData) {
+            nodes = nodes[splitted[i]];
+        }
+        else {
+            nodes = nodes.packages[splitted[i]];
+        }
+    }
+
+    var ret = [];
+
+    for (var i = 0; i < nodes.children.length; i++) {
+        var node = nodes.children[i];
+
+        if (node.type == "Package" || node.type == "Class") {
+            ret.push(node);
+        }
+    }
+
+    return ret;
+}

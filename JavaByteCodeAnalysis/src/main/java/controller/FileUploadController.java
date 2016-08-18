@@ -66,7 +66,6 @@ public class FileUploadController {
                             String className = entry.getName().replace('/', '.');
                             classFile = new ClassFile(new DataInputStream(zis));
                             handleJBC.addNode(classFile);
-                            log.info(className);
                         }
                     }
                 } catch (IOException e) {
