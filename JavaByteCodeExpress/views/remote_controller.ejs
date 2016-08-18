@@ -14,10 +14,10 @@
     <script src="/jui-grid/dist/grid.min.js"></script>
     <script src="/jui-chart/dist/chart.min.js"></script>
 
-    <script src="/js/remote_controller_tmp.js"></script>
+    <script src="/js/remote_controller.js"></script>
     <script src="/js/layout_rc.js"></script>
     <script src="/js/package_tree.js"></script>
-    <script src="/js/details_table_tmp.js"></script>
+    <script src="/js/details_table.js"></script>
     <script src="/js/loading_modal_rc.js"></script>
 
 </head>
@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <div class="center" style="padding: 5px 10px 5px 10px;">
+    <div id="center_div" class="center" style="padding: 5px 10px 5px 10px;">
         <div>
             <div>
                 <button id="btn-home" style="margin-bottom: 5px; width: 30px; height: 30px;" onclick="toHome()"><i class="icon-home"></i>
@@ -58,12 +58,10 @@
 
             <!-- dropdown -->
             <div id="details_table_dd" class="dropdown large">
-                <ul style="width: 300px;">
+                <ul style="padding: 10px;">
                     <span id="selected_name">null</span>
                     <li class="divider"></li>
-                    <li>View Topology</li>
-                    <li>메뉴2</li>
-                    <li>메뉴3</li>
+                    <li id="view_topology">View Topology</li>
                 </ul>
             </div>
 

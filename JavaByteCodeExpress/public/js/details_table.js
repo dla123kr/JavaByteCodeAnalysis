@@ -17,8 +17,11 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                     var type = "Class";
                     if (name.split('*').length > 1)
                         type = "Method";
+                    var relation = window.opener.$("#relation_content").html().trim().split(' ')[0];
+                    var detail = window.opener.$("#detail_content").html().trim().split(' ')[0];
+                    var depth = isNaN(window.opener.depthSlider.getFromValue()) ? 1 : window.opener.depthSlider.getFromValue();
                     $.ajax({
-                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=Both&detail=Classes&depth=1",
+                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
@@ -33,7 +36,7 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                             window.opener.initTopology(result, idx);
                             window.opener.initFilterTree(null, result, idx);
 
-                            window.opener.$("#topology_div").css('visibility', 'visible');
+                            window.opener.$("#topology_div").css('display', 'block');
                         },
                         error: function () {
                             console.log("viewTopology 에러");
@@ -102,14 +105,17 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
             },
             rowmenu: function (row, e) {
                 var icon;
-                if (row.data.type == "Package")
+                if (row.data.type == "Package") {
                     icon = "<i class='icon-document'></i> "
-                else if (row.data.type == "Class")
+                    $("#view_topology").css('display', 'none');
+                } else if (row.data.type == "Class") {
                     icon = "<i class='icon-script'></i> "
+                    $("#view_topology").css('display', 'block');
+                }
 
                 this.select(row.index);
                 $("#selected_name").html(icon + row.data.longName);
-                dd.move(e.pageX, e.pageY);
+                dd.move(e.pageX - layoutRC.options.left.size, e.pageY + $("#center_div").scrollTop());
                 dd.show();
             }
         },
@@ -127,9 +133,10 @@ methodRightClick = function (className, content, signature, e) {
     var methodName = content.innerText;
     var longName = className + "." + methodName;
 
+    $("#view_topology").css('display', 'block');
+
     $("#selected_name").html(icon + longName + "#" + signature);
-    console.log(e);
-    dd.move(e.pageX, e.pageY);
+    dd.move(e.pageX - layoutRC.options.left.size, e.pageY + $("#center_div").scrollTop());
     dd.show();
 }
 

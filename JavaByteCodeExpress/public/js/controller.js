@@ -67,7 +67,7 @@ $(document).ready(function () {
             }
         });
     });
-    
+
     function filterPackagesAndClassesAtRoot(nodes) {
         for (var i = 0; i < nodes.length; i++) {
             filterPackagesAndClasses(nodes[i]);

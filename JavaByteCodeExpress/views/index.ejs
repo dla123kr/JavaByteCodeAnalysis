@@ -18,11 +18,12 @@
     <script src="/jui/dist/ui.min.js"></script>
     <script src="/jui-grid/dist/grid.min.js"></script>
     <script src="/jui-chart/dist/chart.min.js"></script>
+    <script src="/js/custom/topologynode2.js"></script>
 
     <!-- it's mine -->
     <script src="/js/controller.js"></script>
     <script src="/js/loading_modal.js"></script>
-    <script src="/js/topology_tmp.js"></script>
+    <script src="/js/topology.js"></script>
 
     <script type="text/javascript">
         openRemoteController = function () {
@@ -58,6 +59,11 @@
     NOW LOADING... <i class="icon-loading spin" style="font-size: 20px;"></i>
 </div>
 
+<div id="history_tooltip" class="popover" style="display: none; z-index: 10000;">
+    <div class="head"></div>
+    <div class="body"></div>
+</div>
+
 <section class="horizontal-main">
 
     <div class="vertical-main">
@@ -80,7 +86,7 @@
 
     </div>
 
-    <div id="topology_div" style="visibility: hidden; position: absolute; left: 18%; top: 28%;">
+    <div id="topology_div" style="display: none; position: absolute; left: 18%; top: 28%;">
 
         <div id="topology_msgbox" class="msgbox" style="width: 1200px; height: 100px; margin-bottom: 30px;">
             <div class="head">
@@ -105,7 +111,7 @@
                     <span style="margin-left: 20px;">Detail</span>
                     <a id="detail_content" class="btn small" onclick="detailDD.show()"
                        style="width: 100px; text-align: center;">
-                        Classes
+                        Methods
                         <i class="icon-arrow1"></i>
                     </a>
                     <div id="detail_dd" class="dropdown" style="left: 240px;">
@@ -120,7 +126,8 @@
                     <span style="margin-left: 30px;">Depth</span>
                     <div id="depth_slider" class="slider horizontal" style="width: 160px; display: inline-block;"></div>
 
-                    <a class="btn focus" style="margin-left: 10px;" onclick="loadTopology(null)"><i
+                    <a class="btn focus" title="Topology의 속성을 변경합니다." style="margin-left: 10px;"
+                       onclick="loadTopology(null)"><i
                                 class="icon-refresh"></i></a>
 
                     <a class="btn" style="float: right;" onclick="initFilterTree(this, null, null)"><i
@@ -143,6 +150,13 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div id="history_nav" class="navbar" style="text-align: left; margin-top: 5px; background: white;">
+                    <span style="margin-right: 10px;">History</span>
+                    <span id="history_span"></span>
+                    <a class="btn small" title="History를 초기화합니다." style="float: right;" onclick="clearHistory();"><i class="icon-exit"></i></a>
+
                 </div>
             </div>
 

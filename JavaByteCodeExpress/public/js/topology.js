@@ -1,3 +1,9 @@
+var prevTopologyOption = {
+    relation: "Both",
+    detail: "Methods",
+    depth: 1
+};
+
 jui.ready(["ui.dropdown", "ui.slider"], function (dropdown, slider) {
     relationDD = dropdown("#relation_dd", {
         event: {
@@ -40,9 +46,6 @@ jui.ready(null, function () {
 
     jui.define("topology.custom.sort", [], function () {
         return function (data, area, space) {
-            console.log("=== arguments ===");
-            console.log(arguments);
-
             var xy = [];
 
             /**
@@ -75,7 +78,7 @@ jui.ready(null, function () {
                 if (row != MAX_INGOING_ROW) {
                     onlyIngoing[i].x = MAX_WIDTH / MAX_COUNT * (col + 1);
                 } else {
-                    onlyIngoing[i].x = MAX_WIDTH / ((onlyIngoing.length % MAX_COUNT) + 2) * (col + 1);
+                    onlyIngoing[i].x = MAX_WIDTH / ((onlyIngoing.length % (MAX_COUNT + 1)) + 2) * (col + 1);
                 }
                 onlyIngoing[i].y = col % 2 == 0 ? INIT_INGOING_Y + (row - 1) * FLOOR_GAP : INIT_INGOING_Y + FLOOR_GAP / 2 + (row - 1) * FLOOR_GAP;
             }
@@ -91,9 +94,16 @@ jui.ready(null, function () {
                     if (row != MAX_OUTGOING_ROW) {
                         depthData[k][i].x = MAX_WIDTH / MAX_COUNT * (col + 1);
                     } else {
-                        depthData[k][i].x = MAX_WIDTH / ((depthData[k].length % MAX_COUNT) + 2) * (col + 1);
+                        depthData[k][i].x = MAX_WIDTH / ((depthData[k].length % (MAX_COUNT + 1)) + 2) * (col + 1);
                     }
                     depthData[k][i].y = col % 2 == 0 ? INIT_OUTGOING_Y + (row - 1) * FLOOR_GAP : INIT_OUTGOING_Y + FLOOR_GAP / 2 + (row - 1) * FLOOR_GAP;
+                    if (depthData[k][i].x > 1200) {
+                        console.log("================================");
+                        console.log("depthData[" + k + "][" + i + "].x: " + depthData[k][i].x);
+                        console.log(depthData[k].length);
+                        console.log(col);
+
+                    }
                 }
                 INIT_OUTGOING_Y += MAX_OUTGOING_ROW * FLOOR_GAP + 200;
             }
@@ -110,7 +120,7 @@ jui.ready(null, function () {
         '<div id="topology_tooltip" class="popover popover-top">' +
         '<div class="head"><!= longName !></div>' +
         '<div class="body">' +
-        '<div>asdf</div>' +
+        '<div>Double Click 시 해당 요소를 중심으로 봅니다. (Package 제외)</div>' +
         '</div>' +
         '</div>';
 
@@ -140,6 +150,7 @@ jui.ready(null, function () {
     initTopology = function (data, centerIdx) {
         if (data == null)
             data = [];
+        leaveHistory();
         $("#topology").empty();
 
         var centerKey = data[centerIdx].key;
@@ -160,7 +171,7 @@ jui.ready(null, function () {
                 data: data
             },
             brush: {
-                type: "topologynode",
+                type: "topologynode2",
                 nodeImage: function (data) {
                     if (data.type == "main_class") {
                         return "/images/main_class.png";
@@ -185,7 +196,13 @@ jui.ready(null, function () {
                     }
                 },
                 nodeTitle: function (data) {
-                    return data.name;
+                    var name = data.name;
+                    if (data.type != "main_class" && data.type != "package" && data.type != "class") {
+                        var splt = data.key.split('.');
+                        if (splt.length > 1)
+                            name = splt[splt.length - 2] + "." + name;
+                    }
+                    return name;
                 },
                 nodeScale: function (data) {
                     if (data.type == "main_package")
@@ -225,7 +242,16 @@ jui.ready(null, function () {
                     $("#topology_tooltip").remove();
                 },
                 dblclick: function (obj, e) {
-                    loadTopology(obj.data.key);
+                    if (obj.data.type != "package" && obj.data.type != "main_class" && obj.data.type != "main_method")
+                        loadTopology(obj.data.key);
+                    else if (obj.data.type == "main_method") {
+                        var splt = obj.data.key.split('.');
+                        if (splt.length == 1)
+                            return;
+
+                        var key = obj.data.key.substring(0, obj.data.key.length - (splt[splt.length - 1].length + 1));
+                        loadTopology(key);
+                    }
                 }
             },
             widget: {
@@ -292,6 +318,113 @@ jui.ready(null, function () {
     }
 });
 
+var histories = [];
+function leaveHistory() {
+    if ($("#topology_div").css('display') == 'none')
+        return;
+
+    var data = topologyChart.axis(0).data;
+    var mainData;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].type == "main_class" || data[i].type == "main_method") {
+            mainData = data[i];
+            break;
+        }
+    }
+    var history = {
+        key: mainData.key,
+        type: mainData.type,
+        relation: prevTopologyOption.relation,
+        detail: prevTopologyOption.detail,
+        depth: prevTopologyOption.depth
+    };
+    prevTopologyOption = {
+        relation: $("#relation_content").html().trim().split(' ')[0],
+        detail: $("#detail_content").html().trim().split(' ')[0],
+        depth: depthSlider.getFromValue()
+    };
+
+    if (histories.length == 5) {
+        // 맨 처음꺼 없앤다.
+        // histories에서도 없애야하고, a태그도 없애야함
+        histories.splice(0, 1);
+        $("#history_span")[0].getElementsByTagName('a')[0].remove();
+    }
+    histories.push(history);
+    var splt = history.key.split('.');
+    var icon = "<i class='";
+    if (history.type == "main_class")
+        icon += "icon-script";
+    else if (history.type == "main_method")
+        icon += "icon-message";
+    icon += "'></i>";
+    var name = splt[splt.length - 1];
+    if (name.length > 20)
+        name = name.substring(0, 20) + "..";
+    var aTag = "<a class='btn small' style='width: 180px; overflow: hidden; margin-right: 5px;' onclick='loadHistory(this)' onmouseover='showHistoryTooltip(this, event)' onmouseout='hideHistoryTooltip()'>" + icon + " " + name + "</a>";
+    $("#history_span").append(aTag);
+}
+
+function clearHistory() {
+    histories = [];
+    $("#history_span")[0].innerHTML = '';
+}
+
+function loadHistory(obj) {
+    var aTags = $("#history_span")[0].getElementsByTagName('a');
+    for (var i = 0; i < aTags.length; i++) {
+        if (aTags[i] == obj) {
+            loadTopology(histories[i].key);
+            break;
+        }
+    }
+}
+
+function showHistoryTooltip(obj, e) {
+    e.preventDefault();
+
+    var $tooltip = $("#history_tooltip");
+    var head = $tooltip[0].getElementsByClassName('head')[0];
+    var body = $tooltip[0].getElementsByClassName('body')[0];
+
+    var aTags = $("#history_span")[0].getElementsByTagName('a');
+    for (var i = 0; i < aTags.length; i++) {
+        if (aTags[i] == obj) {
+            var icon = "<i class='";
+            var type;
+            if (histories[i].type == "main_class") {
+                icon += "icon-script";
+                type = "Class";
+            } else if (histories[i].type == "main_method") {
+                icon += "icon-message";
+                type = "Method";
+            }
+            icon += "'></i>";
+            head.innerHTML = icon + " " + histories[i].key;
+            body.innerHTML =
+                "<table class='table classic hover' style='width: 150px;'>" +
+                "<thead><tr><th style='width: 50px;'></th><th></th></tr></thead>" +
+                "<tbody>" +
+                "<tr><td style='font-weight: bold;'>Type</td><td>" + type + "</td></tr>" +
+                "<tr><td style='font-weight: bold;'>Relation</td><td>" + histories[i].relation + "</td></tr>" +
+                "<tr><td style='font-weight: bold;'>Detail</td><td>" + histories[i].detail + "</td></tr>" +
+                "<tr><td style='font-weight: bold;'>Depth</td><td>" + histories[i].depth + "</td></tr>" +
+                "</tbody></table>";
+            break;
+        }
+    }
+
+    $tooltip.css({
+        "display": 'block',
+        left: e.pageX - 50,
+        top: e.pageY + 20
+    });
+}
+
+function hideHistoryTooltip() {
+    $("#history_tooltip").css('display', 'none');
+}
+
 function setTopologySize(data) {
     var onlyIngoingCount = 0;
     var depthCount = [0, 0, 0, 0, 0, 0];
@@ -311,17 +444,20 @@ function setTopologySize(data) {
     var MAX_INGOING_ROW = onlyIngoingCount % MAX_COUNT == 0 ? onlyIngoingCount / MAX_COUNT : Math.floor(onlyIngoingCount / MAX_COUNT) + 1;
     var FLOOR_GAP = 100;
 
+    var MAX_DEPTH = depthSlider.getFromValue();
+    if (isNaN(MAX_DEPTH))
+        MAX_DEPTH = 1;
     var height = MAX_INGOING_ROW * FLOOR_GAP + 500;
-    for (var i = 1; i <= 5; i++) {
-        if (depthCount[i] == 0) break;
+    for (var i = 1; i <= MAX_DEPTH; i++) {
         var MAX_OUTGOING_ROW = depthCount[i].length % MAX_COUNT == 0 ? depthCount[i] / MAX_COUNT : Math.floor(depthCount[i] / MAX_COUNT) + 1;
-        height += MAX_OUTGOING_ROW * FLOOR_GAP + 200;
+        if (MAX_OUTGOING_ROW > 0)
+            height += MAX_OUTGOING_ROW * FLOOR_GAP + 200;
     }
 
     chartHeight = height;
     $("#topology").css('height', chartHeight);
     $("#topology_body").css('height', chartHeight + 20);
-    $("#topology_msgbox").css('height', chartHeight + 150);
+    $("#topology_msgbox").css('height', chartHeight + 170);
 }
 
 function recursiveConstructFilterTree(key, oriKey, subKey, treeIndex, type) {
