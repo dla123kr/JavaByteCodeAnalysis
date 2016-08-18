@@ -3,6 +3,11 @@ var prevTopologyOption = {
     detail: "Methods",
     depth: 1
 };
+var presentTopologyOption = {
+    relation: "Both",
+    detail: "Methods",
+    depth: 1
+};
 
 jui.ready(["ui.dropdown", "ui.slider"], function (dropdown, slider) {
     relationDD = dropdown("#relation_dd", {
@@ -120,7 +125,7 @@ jui.ready(null, function () {
         '<div id="topology_tooltip" class="popover popover-top">' +
         '<div class="head"><!= longName !></div>' +
         '<div class="body">' +
-        '<div>Double Click 시 해당 요소를 중심으로 봅니다. (Package 제외)</div>' +
+        '<div><!= comment !></div>' +
         '</div>' +
         '</div>';
 
@@ -135,8 +140,15 @@ jui.ready(null, function () {
         else
             title = '<i class="icon-message"></i> ';
 
+        var comment = "Double Click 시 해당 요소 중심으로 봅니다.";
+        if (obj.data.type == "main_class" || obj.data.type == "package")
+            comment = "";
+        else if (obj.data.type == "main_method")
+            comment = "Double Click 시 이 Method를 선언한 Class 중심으로 봅니다.";
+
         var $tooltip = $(topology.tpl.tooltip({
-            longName: title + obj.data.longName
+            longName: title + obj.data.longName,
+            comment: comment
         }));
         $("body").append($tooltip);
 
@@ -243,14 +255,14 @@ jui.ready(null, function () {
                 },
                 dblclick: function (obj, e) {
                     if (obj.data.type != "package" && obj.data.type != "main_class" && obj.data.type != "main_method")
-                        loadTopology(obj.data.key);
+                        loadTopology(obj.data.key, null);
                     else if (obj.data.type == "main_method") {
                         var splt = obj.data.key.split('.');
                         if (splt.length == 1)
                             return;
 
                         var key = obj.data.key.substring(0, obj.data.key.length - (splt[splt.length - 1].length + 1));
-                        loadTopology(key);
+                        loadTopology(key, null);
                     }
                 }
             },
@@ -265,7 +277,7 @@ jui.ready(null, function () {
         });
     }
 
-    loadTopology = function (name) {
+    loadTopology = function (name, option) {
         if (name == null) {
             var data = topologyChart.axis(0).data;
             for (var i = 0; i < data.length; i++) {
@@ -276,9 +288,9 @@ jui.ready(null, function () {
             }
         }
 
-        var relation = $("#relation_content").html().trim().split(' ')[0];
-        var detail = $("#detail_content").html().trim().split(' ')[0];
-        var depth = depthSlider.getFromValue();
+        var relation = presentTopologyOption.relation = option == null ? $("#relation_content").html().trim().split(' ')[0] : option.relation;
+        var detail = presentTopologyOption.detail = option == null ? $("#detail_content").html().trim().split(' ')[0] : option.detail;
+        var depth = presentTopologyOption.depth = option == null ? depthSlider.getFromValue() : option.depth;
         console.log(relation);
         console.log(detail);
         console.log(depth);
@@ -339,9 +351,9 @@ function leaveHistory() {
         depth: prevTopologyOption.depth
     };
     prevTopologyOption = {
-        relation: $("#relation_content").html().trim().split(' ')[0],
-        detail: $("#detail_content").html().trim().split(' ')[0],
-        depth: depthSlider.getFromValue()
+        relation: presentTopologyOption.relation,
+        detail:  presentTopologyOption.detail,
+        depth:  presentTopologyOption.depth
     };
 
     if (histories.length == 5) {
@@ -374,7 +386,7 @@ function loadHistory(obj) {
     var aTags = $("#history_span")[0].getElementsByTagName('a');
     for (var i = 0; i < aTags.length; i++) {
         if (aTags[i] == obj) {
-            loadTopology(histories[i].key);
+            loadTopology(histories[i].key, histories[i]);
             break;
         }
     }
