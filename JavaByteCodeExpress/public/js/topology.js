@@ -151,14 +151,37 @@ jui.ready(null, function () {
         else
             title = '<i class="icon-message"></i> ';
 
-        var comment = "Double Click 시 해당 요소 중심으로 봅니다.<br/>우클릭 시 부가기능이 나타납니다.";
+        var comment = "<br/>Double Click 시 해당 요소 중심으로 봅니다.<br/>우클릭 시 부가기능이 나타납니다.";
         if (obj.data.type == "main_class" || obj.data.type == "package")
             comment = "";
         else if (obj.data.type == "main_method")
             comment = "Double Click 시 이 Method를 선언한 Class 중심으로 봅니다.";
 
+        if (obj.data.type == "default" || obj.data.type == "private" || obj.data.type == "public" || obj.data.type == "protected" || obj.data.type == "unknown") {
+            var method = findMethod(obj.data.key);
+            var returnType = method.returnType == null ? "(Constructor)" : method.returnType;
+            var table =
+                "<table class='table classic hover' style='width: 500px;'>" +
+                "<thead><tr><th style='width: 80px;'></th><th></th></tr></thead>" +
+                "<tbody><tr><td style='font-weight: bold;'>Return Type</td><td>" + returnType + "</td></tr></tbody></table><br/>";
+
+            if (method.parameters.length > 0) {
+                table +=
+                    "<table class='table classic hover' style='width: 500px;'>" +
+                    "<thead><tr><th style='width: 80px;'></th><th></th></tr></thead>" +
+                    "<tbody>" +
+                    "<tr><td style='font-weight: bold;' rowspan='" + method.parameters.length + "'>Parameters</td><td>" + method.parameters[0] + "</td></tr>";
+                for (var i = 1; i < method.parameters.length; i++) {
+                    table += "<tr><td>" + method.parameters[i] + "</td></tr>";
+                }
+                table += "</tbody></table>";
+            }
+
+            comment = table + comment;
+        }
+
         var $tooltip = $(topology.tpl.tooltip({
-            longName: title + obj.data.key,
+            longName: title + obj.data.longName,
             comment: comment
         }));
         $("body").append($tooltip);
@@ -739,8 +762,7 @@ function saveFilter() {
         data: data,
         type: "POST",
         success: function (result) {
-            console.log("save 성공");
-            console.log(result);
+            notify_submit("Filter 저장 성공");
         },
         error: function (req, status, err) {
             console.log("save 에러");
@@ -767,3 +789,75 @@ function defaultFilter() {
 }
 
 /**************************************************************************************************/
+
+function findMethod(key) {
+    var splt = key.split('.');
+    if (splt.length == 2)
+        key = "(default)." + key;
+
+    var ret = null;
+    splt = key.split('.');
+    for (var i = 0; i < loadedData.length; i++) {
+        if (ret != null)
+            break;
+
+        if (loadedData[i].name == splt[0]) {
+            splt.splice(0, 1);
+            ret = recursiveFindMethod(splt, loadedData[i].children);
+        }
+    }
+
+    return ret;
+}
+
+function recursiveFindMethod(paths, datas) {
+    var ret = null;
+
+    for (var i = 0; i < datas.length; i++) {
+        if (ret != null)
+            return ret;
+
+        if (paths.length == 1) {
+            var splt = paths[0].split('#');
+            var name = splt[0];
+            var signature = splt[1];
+
+            if (datas[i].type == "Method" && datas[i].name == name && datas[i].signature == signature) {
+                return datas[i];
+            }
+        } else {
+            var type = paths.length == 2 ? "Class" : "Package";
+
+            if (datas[i].type == type && datas[i].name == paths[0]) {
+                paths.splice(0, 1);
+                ret = recursiveFindMethod(paths, datas[i].children);
+            }
+        }
+    }
+
+    if (paths.length == 3) {
+
+    } else if (paths.length == 2) {
+        for (var i = 0; i < datas.length; i++) {
+            if (ret != null)
+                return ret;
+
+            if (datas[i].type == "Class" && datas[i].name == paths[0]) {
+                paths.splice(0, 1);
+                ret = recursiveFindMethod(paths, datas[i].children);
+            }
+        }
+    } else if (paths.length == 1) {
+
+    } else {
+        for (var i = 0; i < datas.length; i++) {
+            if (ret != null)
+                return ret;
+
+            if (datas[i].type == "Package" && datas[i].name == paths[0]) {
+                paths.splice(0, 1);
+                ret = recursiveFindMethod(paths, datas[i].children);
+            }
+        }
+    }
+}

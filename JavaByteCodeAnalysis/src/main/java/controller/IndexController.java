@@ -43,7 +43,7 @@ public class IndexController {
         if (HandleJBC.getAllFiltersSet().containsKey(hash))
             return HandleJBC.getAllFiltersSet().get(hash);
         else
-            return null;
+            return new ArrayList<>();
     }
 
     @RequestMapping(path = "/saveFilter", method = RequestMethod.POST)

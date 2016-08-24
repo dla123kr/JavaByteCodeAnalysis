@@ -26,6 +26,7 @@
     <script src="/js/controller.js"></script>
     <script src="/js/loading_modal.js"></script>
     <script src="/js/topology.js"></script>
+    <script src="/js/notification.js"></script>
 
     <script type="text/javascript">
         openRemoteController = function () {
@@ -238,6 +239,13 @@
         </div>
         <ul></ul>
     </li>
+</script>
+
+<script id="notification_tpl" type="text/template">
+    <div class="notify success">
+        <div class="title">알림</div>
+        <div class="message"><!= message !></div>
+    </div>
 </script>
 
 <!-- project-tab의 template -->

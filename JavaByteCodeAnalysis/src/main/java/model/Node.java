@@ -239,7 +239,7 @@ public class Node {
 
         if (returnType.charAt(returnType.length() - 1) == ';')
             returnType = returnType.substring(0, returnType.length() - 1);
-        if (arrDimension-- > 0)
+        while (arrDimension-- > 0)
             returnType += "[]";
 
         return returnType;
