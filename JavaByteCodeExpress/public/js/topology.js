@@ -618,7 +618,8 @@ function applyFilter(isAccessWindow) {
     // filterList를 통해 originTopologyData 걸러냄
     var cpyTopologyData = [];
     for (var i = 0; i < originTopologyData.length; i++) {
-        cpyTopologyData.push(originTopologyData[i]);
+        var deepCopy = $.extend(true, {}, originTopologyData[i]);
+        cpyTopologyData.push(deepCopy);
         if (originTopologyData[i].type == "main_method" || originTopologyData[i].type == "main_class")
             mainKey = originTopologyData[i].key;
     }
@@ -749,6 +750,20 @@ function saveFilter() {
 
         }
     });
+}
+
+function defaultFilter() {
+    filterList = [];
+    filterList.push({
+        key: "java",
+        type: "package"
+    });
+
+    var $filterList = $("#filter_list");
+    for (var i = 0; i < filterList.length; i++) {
+        var icon = filterList[i].type == "package" ? "icon-document" : "icon-script";
+        $filterList.append("<a style='cursor: default;'><span><i class='" + icon + "'></i> " + filterList[i].key + ".*</span><i class='icon-exit' style='cursor: pointer;' onclick='this.parentElement.remove();'></i></a>");
+    }
 }
 
 /**************************************************************************************************/
