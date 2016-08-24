@@ -21,7 +21,7 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                     var detail = window.opener.$("#detail_content").html().trim().split(' ')[0];
                     var depth = isNaN(window.opener.depthSlider.getFromValue()) ? 1 : window.opener.depthSlider.getFromValue();
                     $.ajax({
-                        url: "http://192.168.0.204:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
+                        url: "http://localhost:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");
@@ -33,15 +33,19 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                                     break;
                             }
 
-                            window.opener.initTopology(result, idx);
-                            window.opener.initFilterTree(null, result, idx);
+                            window.opener.originTopologyData = result;
+                            window.opener.originTopologyMainIndex = idx;
+                            window.opener.initTopology(result, idx, true);
+                            window.opener.applyFilter(false);
+                            //window.opener.initFilterTree(null, result, idx);
 
                             window.opener.$("#topology_div").css('display', 'block');
+                            window.opener.$("#help_div").css('display', 'none');
                         },
                         error: function () {
                             console.log("viewTopology 에러");
-                            window.opener.initTopology(null, null);
-                            window.opener.initFilterTree(null, null, null);
+                            window.opener.initTopology(null, null, false);
+                            //window.opener.initFilterTree(null, null, null);
                         },
                         complete: function () {
                             window.opener.topologyLoading.hide();

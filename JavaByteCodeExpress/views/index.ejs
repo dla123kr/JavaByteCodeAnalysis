@@ -4,6 +4,8 @@
 
     <title><%= title %></title>
 
+    <link rel="shortcut icon" type="image/ico" href="/ico/topology.ico"/>
+
     <link rel='stylesheet' href='/stylesheets/style.css'/>
 
     <link rel="stylesheet" href="/jui/dist/ui.min.css"/>
@@ -64,6 +66,11 @@
     <div class="body"></div>
 </div>
 
+<div id="topology_node_dd" class="dropdown large" style="position: absolute; z-index: 10002;">
+    <ul id="topology_node_dd_list" style="padding: 10px;">
+    </ul>
+</div>
+
 <section class="horizontal-main">
 
     <div class="vertical-main">
@@ -82,7 +89,33 @@
         <a class="btn" style="font-size: 17px;" onclick="openRemoteController()"><i class="icon-profile"></i> Remote
             Controller</a>
 
+
         <hr/>
+
+    </div>
+
+    <div id="help_div"
+         style="position: absolute; left: 18%; top: 28%; width: 1200px; margin-bottom: 30px; text-align: center;">
+
+        <!--<div class="h1" style="margin-bottom: 20px;">-->
+        <!--처음 시작하시는 분들께서는<br/>-->
+        <!--파일을 첨부하고 Load하신 후에<br/>-->
+        <!--아래와 같이 도움말을 참고해주십시오.-->
+        <!--</div>-->
+        <!--<div>-->
+        <!--<img src="/images/inform/rc_help.png" style="border: solid 1px lightgray;"/><br/>-->
+        <!--<div class="h4">[ Remote Controller의 우측 상단 ]</div><br/>-->
+
+        <!--<img src="/images/inform/topology_help.png" style="border: solid 1px lightgray;"/><br/>-->
+        <!--<div class="h4">[ Topology의 상단 ]</div><br/>-->
+        <!--</div>-->
+
+        <div class="h1" style="margin-bottom: 20px;">
+            처음 시작하시는 분들께서는<br/>
+            파일을 첨부하고 Load를 해주세요.<br/><br/>
+
+            이미 Load하신 적이 있다면, 과거의 기록이 남아있을 것입니다.<br/>
+        </div>
 
     </div>
 
@@ -91,6 +124,8 @@
         <div id="topology_msgbox" class="msgbox" style="width: 1200px; height: 100px; margin-bottom: 30px;">
             <div class="head">
                 Topology
+                <a class="btn small" style="font-size: 13px; margin-left: 50px;"
+                   onclick="window.open('/help_topology', 'helpTopology')"><i class="icon-help"></i></a>
 
                 <div class="navbar" style="text-align: left; margin-top: 5px; background: white;">
                     <span>Relation</span>
@@ -127,11 +162,14 @@
                     <div id="depth_slider" class="slider horizontal" style="width: 160px; display: inline-block;"></div>
 
                     <a class="btn focus" title="Topology의 속성을 변경합니다." style="margin-left: 10px;"
-                       onclick="loadTopology(null)"><i
+                       onclick="loadTopology(null, null)"><i
                                 class="icon-refresh"></i></a>
 
-                    <a class="btn" style="float: right;" onclick="initFilterTree(this, null, null)"><i
+
+                    <a id="btn_filter" class="btn" style="float: right;" onclick="initFilter()"><i
                                 class="icon-filter"></i></a>
+                    <a class="btn" title="현재 적용한 Filter를 저장합니다." style="float: right;" onclick="saveFilter();"><i
+                                class="icon-save"></i></a>
 
                     <div id="filter"
                          style="position: absolute; z-index: 10010; width: 500px; height: 400px; display: none; padding: 10px;">
@@ -141,12 +179,19 @@
                             </div>
 
                             <div class="body" style="height:280px;">
-                                <ul id="filter_tree" class="tree line"></ul>
+                                <!--<ul id="filter_tree" class="tree line"></ul>-->
+                                <div id="filter_list" class="vmenu">
+                                    <a style="cursor: default;"><span><i class="icon-document"></i> test</span><i
+                                                class="icon-exit"
+                                                style="cursor: pointer;"
+                                                onclick="alert('qqq')"></i></a>
+                                </div>
                             </div>
 
                             <div class="foot">
-                                <a class="btn focus small" onclick="applyFilterTree()">Apply</a>
-                                <a class="btn small" onclick="clearFilterTree()">Clear</a>
+                                <a class="btn focus small" onclick="applyFilter(true)">Apply</a>
+                                <a class="btn small" onclick="alert('미구현')">Default</a>
+                                <a class="btn small" onclick="clearFilter()">Clear</a>
                             </div>
                         </div>
                     </div>
@@ -155,7 +200,8 @@
                 <div id="history_nav" class="navbar" style="text-align: left; margin-top: 5px; background: white;">
                     <span style="margin-right: 10px;">History</span>
                     <span id="history_span"></span>
-                    <a class="btn small" title="History를 초기화합니다." style="float: right;" onclick="clearHistory();"><i class="icon-exit"></i></a>
+                    <a class="btn small" title="History를 초기화합니다." style="float: right;" onclick="clearHistory();"><i
+                                class="icon-exit"></i></a>
 
                 </div>
             </div>

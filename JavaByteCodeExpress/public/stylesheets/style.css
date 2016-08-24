@@ -2,6 +2,12 @@ a {
     color: #00B7FF;
 }
 
+.inform {
+    color: dodgerblue;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .center {
     position: relative;
     width: 600px;

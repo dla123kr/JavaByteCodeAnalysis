@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Help - Remote Controller</title>
+
+    <link rel="shortcut icon" type="image/ico" href="/ico/help.ico"/>
+
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+
+    <link rel="stylesheet" href="/jui/dist/ui.min.css"/>
+    <link rel="stylesheet" href="/jui/dist/ui-jennifer.min.css"/>
+    <link rel="stylesheet" href="/jui-grid/dist/grid.min.css"/>
+    <link rel="stylesheet" href="/jui-grid/dist/grid-jennifer.min.css"/>
+
+    <script src="//code.jquery.com/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        function showTooltip(num, e) {
+            e.preventDefault();
+
+            var $tooltip = $("#tooltip");
+            var body = $tooltip[0].getElementsByClassName("body")[0];
+
+            body.innerHTML = "<img src='/images/inform/rc_help_" + num + ".png' style='border: solid 1px lightgray;'/>";
+            $tooltip.css({
+                "display": 'block',
+                left: e.pageX - $tooltip.width() / 2,
+                top: e.pageY - $tooltip.height() - 10
+            });
+        }
+
+        function hideTooltip() {
+            $("#tooltip").css('display', 'none');
+        }
+    </script>
+
+</head>
+<body class="jui">
+
+<header class="navbar fixed top" style="background: #2B3340; height: 75px; z-index: 10001;">
+    <div style="text-align: center; margin-top: 10px;">
+        <span style="font-family: Consolas; font-size: 40px;">
+            <a href="#" style="color: white; text-decoration: none;">Help - Remote Controller</a>
+        </span>
+    </div>
+</header>
+
+<div id="tooltip" class="popover" style="display: none; z-index: 10000;">
+    <div class="head">Tooltip</div>
+    <div class="body"></div>
+</div>
+
+<div style="text-align: center; margin-top: 150px;">
+
+    <div class="h1" style="margin-bottom: 30px;">Remote Controller은 아래와 같이 구성되어 있습니다.</div>
+
+    <img src="/images/inform/rc_help_01.png" style="border: solid 1px lightgray;"/><br/>
+    <div style="position: absolute; text-align: left; left: 25%; padding: 20px;">
+        <div class="h2">1. Package Tree</div>
+        <p>
+            프로젝트의 Package들을 Tree로 보여줍니다.<br/>
+            이름을 클릭하여 Package의 안을 Details Table에서 볼 수도 있고,<br/>
+            Tree를 접을 수도, 펼 수도 있습니다.
+        </p>
+
+        <div class="h2" style="margin-top: 50px;">2. Home, Up</div>
+        <p>
+            Details Table의 최상위, 상위로 이동합니다.
+        </p>
+
+        <div class="h2" style="margin-top: 50px;">3. Details Table</div>
+        <p>
+            선택된 Package의 안을 볼 수 있습니다.<br/>
+            기본적으로 해당 요소가 Package인지, Class인지 아이콘을 통해 확인할 수 있습니다.<br/>
+            마우스 왼쪽 버튼으로 클릭하여 Pacakge는 더 안으로 들어갈 수 있고,<br/>
+            <a class="inform" onmouseover="showTooltip('02', event)" onmouseout="hideTooltip()">Class는 상세정보</a>를 펼치고, 닫을
+            수 있습니다.<br/>
+            Class의 경우 마우스 오른쪽 버튼으로 클릭 시 <a class="inform" onmouseover="showTooltip('03', event)"
+                                           onmouseout="hideTooltip()">부가메뉴</a>가 나타납니다.<br/>
+            현재 부가메뉴는 'View Topology'가 가능합니다.<br/><br/>
+
+            Class의 상세정보 중 Method를 마우스 오른쪽 버튼으로 클릭 시 <a class="inform" onmouseover="showTooltip('04', event)"
+                                                       onmouseout="hideTooltip()">부가메뉴</a>가
+            나타납니다.<br/>
+        </p>
+
+        <div class="h2" style="margin-top: 50px;">4. 도움말</div>
+        <p>
+            도움말을 켭니다.
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+</html>

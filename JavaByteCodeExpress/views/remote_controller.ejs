@@ -3,6 +3,8 @@
 
     <title>Remote Controller</title>
 
+    <link rel="shortcut icon" type="image/ico" href="/ico/remote_controller.ico"/>
+
     <link rel="stylesheet" href="/jui/dist/ui.min.css"/>
     <link rel="stylesheet" href="/jui/dist/ui-jennifer.min.css"/>
     <link rel="stylesheet" href="/jui-grid/dist/grid.min.css"/>
@@ -39,11 +41,15 @@
     <div id="center_div" class="center" style="padding: 5px 10px 5px 10px;">
         <div>
             <div>
-                <button id="btn-home" style="margin-bottom: 5px; width: 30px; height: 30px;" onclick="toHome()"><i class="icon-home"></i>
+                <button id="btn-home" style="margin-bottom: 5px; width: 30px; height: 30px;" onclick="toHome()"><i
+                            class="icon-home"></i>
                 </button>
-                <button id="btn-up" style="margin-bottom: 5px; swidth: 30px; height: 30px;" onclick="toUp()"><i
+                <button id="btn-up" style="margin-bottom: 5px; width: 30px; height: 30px;" onclick="toUp()"><i
                             class="icon-arrow3"></i>
                 </button>
+
+                <button style="margin-right: 15px; margin-bottom: 5px; width: 30px; height: 30px; float: right;"><i
+                            class="icon-help" onclick="window.open('/help_rc', 'helpRC');"></i></button>
             </div>
 
             <table id="details_table" class="table expand">

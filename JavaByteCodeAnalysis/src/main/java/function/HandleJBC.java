@@ -14,6 +14,7 @@ public class HandleJBC {
 
     private ArrayList<Node> staticNodes = new ArrayList<>();
     private static Hashtable<String, ArrayList<Node>> allNodesSet = new Hashtable<>();
+    private static Hashtable<String, ArrayList<Filter>> allFiltersSet = new Hashtable<>();
 
     public ArrayList<Node> getStaticNodes() {
         return staticNodes;
@@ -22,6 +23,7 @@ public class HandleJBC {
     public static Hashtable<String, ArrayList<Node>> getAllNodesSet() {
         return allNodesSet;
     }
+    public static Hashtable<String, ArrayList<Filter>> getAllFiltersSet() { return allFiltersSet; }
 
     public void addNode(ClassFile classFile) {
         ClassPool classPool = ClassPool.getDefault();

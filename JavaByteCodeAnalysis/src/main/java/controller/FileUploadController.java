@@ -13,7 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 @RestController
-@CrossOrigin(origins = "http://192.168.0.204:3000")
+@CrossOrigin(origins = "http://localhost:3000")
 public class FileUploadController {
 
     private static Logger log = Logger.getLogger(FileUploadController.class);

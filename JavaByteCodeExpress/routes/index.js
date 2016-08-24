@@ -28,4 +28,12 @@ router.get('/rc', function (req, res) {
     res.render('remote_controller', null);
 });
 
+router.get('/help_rc', function (req, res) {
+    res.render('remote_controller_help', null);
+});
+
+router.get('/help_topology', function (req, res) {
+    res.render('topology_help', null);
+});
+
 module.exports = router;

@@ -151,11 +151,12 @@ jui.define("chart.brush.topologynode2",
 
                     if(title && title != "") {
                         var titles = title.split(".");
+                        var _y = (size.r + 13) * xy.scale;
 
                         self.chart.text({
                             "class": "title",
                             x: 0.1 * xy.scale,
-                            y: (size.r + 13) * xy.scale,
+                            y: _y,
                             fill: self.chart.theme("topologyNodeTitleFontColor"),
                             "font-size": self.chart.theme("topologyNodeTitleFontSize") * xy.scale,
                             "font-weight": titles.length == 2 ? "normal" : "bold",
@@ -167,7 +168,7 @@ jui.define("chart.brush.topologynode2",
                             self.chart.text({
                                 "class": "title",
                                 x: 0.1 * xy.scale,
-                                y: ((size.r + 13) * xy.scale) * 1.5,
+                                y: _y + 13,
                                 fill: self.chart.theme("topologyNodeTitleFontColor"),
                                 "font-size": self.chart.theme("topologyNodeTitleFontSize") * xy.scale,
                                 "font-weight": "bold",

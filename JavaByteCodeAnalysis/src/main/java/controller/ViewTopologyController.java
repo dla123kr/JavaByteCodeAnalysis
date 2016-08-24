@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 @RestController
-@CrossOrigin(origins = "http://192.168.0.204:3000")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ViewTopologyController {
     private static final Logger log = Logger.getLogger(ViewTopologyController.class);
 
@@ -284,7 +284,7 @@ public class ViewTopologyController {
                 calledTN = topologyNodeHashtable.get(chkStartKey);
                 if (calledTN.getDepth() < curDepth + 1)
                     calledTN.setDepth(curDepth + 1);
-                // calledTN.increaseCalledCount();
+                calledTN.increaseCalledCount();
             } else {
                 Node findedNode = null;
                 for (Node _node : HandleJBC.getAllNodesSet().get(hash)) {
@@ -296,6 +296,7 @@ public class ViewTopologyController {
                 String type = detailType == NodeType.PACKAGE ? "package" : "class";
                 calledTN = new TopologyNode(findedNode, type);
                 calledTN.setDepth(curDepth + 1);
+                calledTN.setCalledCount(1);
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
 
                 // TODO: 2016-08-09 추가 depth 진행
@@ -345,7 +346,7 @@ public class ViewTopologyController {
                 calledTN = topologyNodeHashtable.get(calledMethodKey);
                 if (calledTN.getDepth() < curDepth + 1)
                     calledTN.setDepth(curDepth + 1);
-//                calledTN.increaseCalledCount();
+                calledTN.increaseCalledCount();
 
                 // TODO: 2016-08-08 이미 있을 땐 어떡하지 ?
             } else {
@@ -360,6 +361,7 @@ public class ViewTopologyController {
 
                 calledTN = new TopologyNode(findedJBCMethod, filterAccessModifier(findedJBCMethod.getAccessModifier(), findedJBCMethod, findedJBCClass));
                 calledTN.setDepth(curDepth + 1);
+                calledTN.setCalledCount(1);
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
 
                 // TODO: 2016-08-08 추가 depth 진행?????

@@ -1,13 +1,19 @@
 package controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import function.HandleJBC;
+import model.Filter;
 import model.Node;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://192.168.0.204:3000")
+@CrossOrigin(origins = "http://localhost:3000")
 public class IndexController {
     private static final Logger log = Logger.getLogger(IndexController.class);
 
@@ -30,5 +36,28 @@ public class IndexController {
 
         log.info("입장 : " + hash);
         return HandleJBC.getAllNodesSet().get(hash);
+    }
+
+    @RequestMapping(path = "/loadFilter", method = RequestMethod.GET)
+    public ArrayList<Filter> loadFilter(@RequestParam("hash") String hash) {
+        if (HandleJBC.getAllFiltersSet().containsKey(hash))
+            return HandleJBC.getAllFiltersSet().get(hash);
+        else
+            return null;
+    }
+
+    @RequestMapping(path = "/saveFilter", method = RequestMethod.POST)
+    public String saveFilter(@RequestParam("hash") String hash, @RequestParam("filters") String filterJSON) {
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayList<Filter> filters = null;
+        try {
+            filters = mapper.readValue(filterJSON, new TypeReference<ArrayList<Filter>>() {
+            });
+            HandleJBC.getAllFiltersSet().put(hash, filters);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "{}";
     }
 }

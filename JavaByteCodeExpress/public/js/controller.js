@@ -3,7 +3,7 @@ $(document).ready(function () {
     hash = $("#hiddenHash").val();
 
     $.ajax({
-        url: "http://192.168.0.204:8080/index?hash=" + hash,
+        url: "http://localhost:8080/index?hash=" + hash,
         processData: false,
         contentType: false,
         data: {"hash": hash},
@@ -17,6 +17,18 @@ $(document).ready(function () {
 
             loadingModal.hide();
             openRemoteController();
+
+            $.ajax({
+                url: "http://localhost:8080/loadFilter?hash=" + hash,
+                type: "GET",
+                success: function (result) {
+                    console.log("loadFilter 성공");
+                    filterList = result;
+                },
+                error: function () {
+                    console.log("loadFilter 실패");
+                }
+            });
         },
         error: function (req, status, err) {
             console.log(this.data);
@@ -32,7 +44,7 @@ $(document).ready(function () {
         $("#uploadButton").attr('disabled', true);
 
         $.ajax({
-            url: "http://192.168.0.204:8080/fileUpload",
+            url: "http://localhost:8080/fileUpload",
             contentType: false,
             processData: false,
             data: formData,
@@ -52,11 +64,14 @@ $(document).ready(function () {
                 $("#uploadButton").attr('disabled', false);
             }
         });
+
+        $("#help_div").css('display', 'block');
+        $("#topology_div").css('display', 'none');
     });
 
     $("#clearButton").click(function () {
         $.ajax({
-            url: "http://192.168.0.204:8080/clear?hash=" + hash,
+            url: "http://localhost:8080/clear?hash=" + hash,
             type: "GET",
             success: function () {
                 console.log("clear 성공");
