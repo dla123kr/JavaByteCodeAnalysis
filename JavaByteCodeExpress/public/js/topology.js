@@ -379,12 +379,10 @@ jui.ready(null, function () {
                 originTopologyMainIndex = idx;
                 initTopology(result, idx, true);
                 applyFilter(false);
-                //initFilterTree(null, result, idx);
             },
             error: function () {
                 console.log("viewTopology 에러");
                 initTopology(null, null, false);
-                //initFilterTree(null, null, null);
             },
             complete: function () {
                 topologyLoading.hide();
@@ -546,9 +544,16 @@ function initFilter() {
     if ($filter.css('display') == 'none') {
         $filterList.html('');
 
-        for (var i = 0; i < filterList.length; i++) {
-            var icon = filterList[i].type == "package" ? "icon-document" : "icon-script";
-            $filterList.append("<a style='cursor: default;'><span><i class='" + icon + "'></i> " + filterList[i].key + ".*</span><i class='icon-exit' style='cursor: pointer;' onclick='this.parentElement.remove();'></i></a>");
+        if (filterList.length == 0) {
+            var content =
+                "<p>추가된 Filter가 없습니다. <br/>Filter를 추가하시려면 아래와 같이 Node를 우클릭하세요.</p>" +
+                "<img src='/images/inform/filter_help.png'/>";
+            $filterList.append(content);
+        } else {
+            for (var i = 0; i < filterList.length; i++) {
+                var icon = filterList[i].type == "package" ? "icon-document" : "icon-script";
+                $filterList.append("<a style='cursor: default;'><span><i class='" + icon + "'></i> " + filterList[i].key + ".*</span><i class='icon-exit' style='cursor: pointer;' onclick='this.parentElement.remove();'></i></a>");
+            }
         }
 
         var x = $("#btn_filter")[0].offsetLeft, y = $("#btn_filter")[0].offsetTop;
@@ -782,6 +787,7 @@ function defaultFilter() {
     });
 
     var $filterList = $("#filter_list");
+    $filterList.html('');
     for (var i = 0; i < filterList.length; i++) {
         var icon = filterList[i].type == "package" ? "icon-document" : "icon-script";
         $filterList.append("<a style='cursor: default;'><span><i class='" + icon + "'></i> " + filterList[i].key + ".*</span><i class='icon-exit' style='cursor: pointer;' onclick='this.parentElement.remove();'></i></a>");

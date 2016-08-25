@@ -37,7 +37,6 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                             window.opener.originTopologyMainIndex = idx;
                             window.opener.initTopology(result, idx, true);
                             window.opener.applyFilter(false);
-                            //window.opener.initFilterTree(null, result, idx);
 
                             window.opener.$("#topology_div").css('display', 'block');
                             window.opener.$("#help_div").css('display', 'none');
@@ -45,7 +44,6 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                         error: function () {
                             console.log("viewTopology 에러");
                             window.opener.initTopology(null, null, false);
-                            //window.opener.initFilterTree(null, null, null);
                         },
                         complete: function () {
                             window.opener.topologyLoading.hide();
