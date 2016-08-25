@@ -98,24 +98,7 @@
     <div id="help_div"
          style="position: absolute; left: 18%; top: 28%; width: 1200px; margin-bottom: 30px; text-align: center;">
 
-        <!--<div class="h1" style="margin-bottom: 20px;">-->
-        <!--처음 시작하시는 분들께서는<br/>-->
-        <!--파일을 첨부하고 Load하신 후에<br/>-->
-        <!--아래와 같이 도움말을 참고해주십시오.-->
-        <!--</div>-->
-        <!--<div>-->
-        <!--<img src="/images/inform/rc_help.png" style="border: solid 1px lightgray;"/><br/>-->
-        <!--<div class="h4">[ Remote Controller의 우측 상단 ]</div><br/>-->
-
-        <!--<img src="/images/inform/topology_help.png" style="border: solid 1px lightgray;"/><br/>-->
-        <!--<div class="h4">[ Topology의 상단 ]</div><br/>-->
-        <!--</div>-->
-
-        <div class="h1" style="margin-bottom: 20px;">
-            처음 시작하시는 분들께서는<br/>
-            파일을 첨부하고 Load를 해주세요.<br/><br/>
-
-            이미 Load하신 적이 있다면, 과거의 기록이 남아있을 것입니다.<br/>
+        <div id="intro_div" class="h1" style="margin-bottom: 20px;">
         </div>
 
     </div>
@@ -242,7 +225,7 @@
 </script>
 
 <script id="notification_tpl" type="text/template">
-    <div class="notify success">
+    <div class="notify <!= type !>">
         <div class="title">알림</div>
         <div class="message"><!= message !></div>
     </div>

@@ -21,7 +21,7 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                     var detail = window.opener.$("#detail_content").html().trim().split(' ')[0];
                     var depth = isNaN(window.opener.depthSlider.getFromValue()) ? 1 : window.opener.depthSlider.getFromValue();
                     $.ajax({
-                        url: "http://localhost:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
+                        url: "http://192.168.0.172:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
                         type: "GET",
                         success: function (result) {
                             console.log("viewTopology 성공");

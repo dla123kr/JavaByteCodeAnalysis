@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://192.168.0.172:3000")
 public class ViewTopologyController {
     private static final Logger log = Logger.getLogger(ViewTopologyController.class);
 

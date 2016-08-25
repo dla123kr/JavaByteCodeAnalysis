@@ -8,8 +8,9 @@ jui.ready(["ui.notify"], function (notify) {
         }
     });
 
-    notify_submit = function (msg) {
+    notify_submit = function (type, msg) {
         notification.add({
+            type: type,
             message: msg
         });
     }
