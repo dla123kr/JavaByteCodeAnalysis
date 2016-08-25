@@ -780,17 +780,17 @@ function saveFilter() {
 }
 
 function defaultFilter() {
-    filterList = [];
-    filterList.push({
+    var defaultFilterList = [];
+    defaultFilterList.push({
         key: "java",
         type: "package"
     });
 
     var $filterList = $("#filter_list");
     $filterList.html('');
-    for (var i = 0; i < filterList.length; i++) {
-        var icon = filterList[i].type == "package" ? "icon-document" : "icon-script";
-        $filterList.append("<a style='cursor: default;'><span><i class='" + icon + "'></i> " + filterList[i].key + ".*</span><i class='icon-exit' style='cursor: pointer;' onclick='this.parentElement.remove();'></i></a>");
+    for (var i = 0; i < defaultFilterList.length; i++) {
+        var icon = defaultFilterList[i].type == "package" ? "icon-document" : "icon-script";
+        $filterList.append("<a style='cursor: default;'><span><i class='" + icon + "'></i> " + defaultFilterList[i].key + ".*</span><i class='icon-exit' style='cursor: pointer;' onclick='this.parentElement.remove();'></i></a>");
     }
 }
 
