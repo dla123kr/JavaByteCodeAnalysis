@@ -304,7 +304,9 @@ jui.ready(null, function () {
                 },
                 edgeData: edgeData,
                 edgeOpacity: function (data) {
-                    if (data.calledCount == 0 || data.calledCount == 1)
+                    if (data.calledCount == 0)
+                        return 0.5;
+                    else if (data.calledCount == 1)
                         return 0.3;
                     else if (data.calledCount > (maxCalledCount - 1) * 2 / 3 + 1)
                         return 1;
