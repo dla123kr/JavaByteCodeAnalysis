@@ -169,7 +169,6 @@ jui.ready(null, function () {
         );
         promise.then(
             function (method) {
-                console.log("method: " + method);
                 if (method != undefined) {
                     var returnType = method.returnType == null ? "(Constructor)" : method.returnType;
                     var table =
@@ -396,7 +395,7 @@ jui.ready(null, function () {
 
                 originTopologyData = result;
                 originTopologyMainIndex = idx;
-                initTopology(result, idx, true);
+                initTopology(result, idx, option == null);
                 applyFilter(false);
             },
             error: function () {
@@ -452,10 +451,27 @@ function leaveHistory() {
         icon += "icon-message";
     icon += "'></i>";
     var name = splt[splt.length - 1];
-    if (name.length > 20)
-        name = name.substring(0, 20) + "..";
-    var aTag = "<a class='btn small' style='width: 180px; overflow: hidden; margin-right: 5px;' onclick='loadHistory(this)' onmouseover='showHistoryTooltip(this, event)' onmouseout='hideHistoryTooltip()'>" + icon + " " + name + "</a>";
+    if (name.length > 18)
+        name = name.substring(0, 18) + "..";
+    var aTag =
+        "<a class='btn small' style='width: 180px; overflow: hidden; margin-right: 5px;' " +
+        // "onclick='loadHistory(this)' onmouseover='showHistoryTooltip(this, event)' onmouseout='hideHistoryTooltip()'>" + icon + " " + name +
+        "onmouseover='showHistoryTooltip(this, event)' onmouseout='hideHistoryTooltip()'>" +
+        "<span style='display: inline-block; width: 140px;' onclick='loadHistory(this.parentElement)'>" + icon + " " + name + "</span>" +
+        "<i class='icon-close' style='float: right; margin-top: 5px; cursor: pointer;' onclick=removeHistory(this.parentElement)></i>" +
+        "</a>";
     $("#history_span").append(aTag);
+}
+
+function removeHistory(obj) {
+    var aTags = $("#history_span")[0].getElementsByTagName('a');
+    for (var i = 0; i < aTags.length; i++) {
+        if (aTags[i] == obj) {
+            obj.remove();
+            histories.splice(i, 1);
+            break;
+        }
+    }
 }
 
 function clearHistory() {
@@ -582,6 +598,10 @@ function initFilter() {
     } else {
         $filter.hide();
     }
+}
+
+function hideFilter() {
+    $("#filter").hide();
 }
 
 function initTopologyNodeDD(obj) {

@@ -22,6 +22,7 @@
     <script src="/js/details_table.js"></script>
     <script src="/js/loading_modal_rc.js"></script>
 
+
 </head>
 <body class="jui">
 
@@ -93,20 +94,9 @@
 </script>
 
 <script data-jui="#details_table" data-tpl="expand" type="text/template">
-    <div class="row">
-        <div class="group">
-            <span class="h1">
-                <!= longName !>
-            </span>
-            <! if(!isLoaded) { !>
-            <span class="h3" style="color: red;">
-                ( Unloaded )
-            </span>
-            <! } !>
-        </div>
-    </div>
+
     <div class="row" style="margin-top: 10px;">
-        <table class="table classic">
+        <table class="table simple stripeless">
             <thead>
             <tr>
                 <th style="width: 100px; text-align: center;">Type</th>
@@ -117,11 +107,11 @@
 
             <! if((superClassName != 'java.lang.Object' && superClassName != null) || interfaceNames.length > 0) { !>
             <tr>
-                <td style="font-weight: bold">Class</td>
+                <td style="font-weight: bold; text-align: center;">Class</td>
                 <td>
 
                     <div>
-                        <table class="table simple hover" style="width: 100%;">
+                        <table class="table simple small stripeless" style="width: 100%;">
                             <tbody>
                             <! if(superClassName != 'java.lang.Object' && superClassName != null) { !>
                             <tr>
@@ -173,7 +163,7 @@
                             <tbody>
                             <! for(var i = 0; i < fields.length; i++) { !>
                             <tr>
-                                <td rowspan="2" style="text-align: center;"><!= fields[i].name !></td>
+                                <td rowspan="2" style="text-align: center; width: 260px;"><!= fields[i].name !></td>
                                 <td>Access Modifier</td>
                                 <td><!= fields[i].accessModifier !></td>
                             </tr>
@@ -203,7 +193,7 @@
                             <tr>
                                 <! var methodRowCount = 3 + methods[i].parameters.length +
                                 methods[i].calledMethods.length; !>
-                                <td rowspan="<!= methodRowCount !>" style="text-align: center;">
+                                <td rowspan="<!= methodRowCount !>" style="text-align: center; width: 260px;">
                                     <span style="font-weight: bold;">
                                         <!= methods[i].name !>
                                         <! var methodName = longName + "." + methods[i].name + "#" + methods[i].signature; !>
