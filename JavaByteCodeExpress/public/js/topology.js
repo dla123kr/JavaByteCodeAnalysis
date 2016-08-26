@@ -556,7 +556,7 @@ function setTopologySize(data) {
     var MAX_DEPTH = depthSlider.getFromValue();
     if (isNaN(MAX_DEPTH))
         MAX_DEPTH = 1;
-    var height = MAX_INGOING_ROW * FLOOR_GAP + 500;
+    var height = MAX_INGOING_ROW * FLOOR_GAP + 600;
     for (var i = 1; i <= MAX_DEPTH; i++) {
         var MAX_OUTGOING_ROW = depthCount[i].length % MAX_COUNT == 0 ? depthCount[i] / MAX_COUNT : Math.floor(depthCount[i] / MAX_COUNT) + 1;
         if (MAX_OUTGOING_ROW > 0)
@@ -566,7 +566,7 @@ function setTopologySize(data) {
     chartHeight = height;
     $("#topology").css('height', chartHeight);
     $("#topology_body").css('height', chartHeight + 20);
-    $("#topology_msgbox").css('height', chartHeight + 170);
+    $("#topology_msgbox").css('height', chartHeight + 180);
 }
 
 /**************************************************************************************************/
