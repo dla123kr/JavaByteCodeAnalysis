@@ -232,6 +232,10 @@ jui.ready(null, function () {
                 maxCalledCount = data[i].calledCount;
         }
 
+        var edgeData;
+        createEdgeData(data, function (edges) {
+            edgeData = edges;
+        });
 
         topologyChart = chart("#topology", {
             width: chartWidth,
@@ -297,6 +301,16 @@ jui.ready(null, function () {
                         scale *= 2;
 
                     return scale;
+                },
+                edgeData: edgeData,
+                edgeOpacity: function (data) {
+                    if (data.calledCount == 0 || data.calledCount == 1)
+                        return 0.3;
+                    else if (data.calledCount > (maxCalledCount - 1) * 2 / 3 + 1)
+                        return 1;
+                    else if (data.calledCount > (maxCalledCount - 1) / 3 + 1)
+                        return 0.8;
+                    return 0.6;
                 },
                 activeNode: centerKey
             },
@@ -409,6 +423,26 @@ jui.ready(null, function () {
         });
     }
 });
+
+function createEdgeData(datas, callback) {
+    var calledCountTable = {};
+    for (var i = 0; i < datas.length; i++) {
+        calledCountTable[datas[i].key] = datas[i].calledCount;
+    }
+
+    var edgeData = [];
+    for (var i = 0; i < datas.length; i++) {
+        for (var j = 0; j < datas[i].outgoing.length; j++) {
+            var key = datas[i].key + ":" + datas[i].outgoing[j];
+            edgeData.push({
+                key: key,
+                calledCount: calledCountTable[datas[i].outgoing[j]]
+            });
+        }
+    }
+
+    callback(edgeData);
+}
 
 var histories = [];
 function leaveHistory() {
@@ -691,7 +725,6 @@ function applyFilter(isAccessWindow) {
             mainKey = originTopologyData[i].key;
     }
 
-    console.log(cpyTopologyData);
     // 1. filterList의 key에 속하는 애들 다 없애자
     for (var i = 0; i < cpyTopologyData.length; i++) {
         if (cpyTopologyData[i].key == mainKey)
@@ -735,8 +768,6 @@ function applyFilter(isAccessWindow) {
             }
         }
     }
-
-    console.log(cpyTopologyData);
 
     // 2. 남아있는 애들 중에 filterList에 속하는 outgoing 다 없애자
     for (var i = 0; i < cpyTopologyData.length; i++) {
