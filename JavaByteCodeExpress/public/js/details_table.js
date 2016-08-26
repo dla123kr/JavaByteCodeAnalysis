@@ -1,59 +1,6 @@
-var dd;
+var isViewTopology = false;
 
 jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
-
-    dd = dropdown("#details_table_dd", {
-        event: {
-            change: function (data) {
-                if (data.text == "View Topology") {
-                    // 토폴로지 조종
-                    // loading modal 양쪽 다 띄워야함
-                    window.opener.topologyLoading.show();
-                    topologyLoadingAtRC.show();
-
-                    // ajax로 데이터 요청
-
-                    var name = $("#selected_name").text().trim().replace("#", "*");
-                    var type = "Class";
-                    if (name.split('*').length > 1)
-                        type = "Method";
-                    var relation = window.opener.$("#relation_content").html().trim().split(' ')[0];
-                    var detail = window.opener.$("#detail_content").html().trim().split(' ')[0];
-                    var depth = isNaN(window.opener.depthSlider.getFromValue()) ? 1 : window.opener.depthSlider.getFromValue();
-                    $.ajax({
-                        url: "http://192.168.0.172:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
-                        type: "GET",
-                        success: function (result) {
-                            console.log("viewTopology 성공");
-                            console.log(result);
-                            name = name.replace("*", "#");
-                            var idx;
-                            for (idx = 0; idx < result.length; idx++) {
-                                if (result[idx].key == name)
-                                    break;
-                            }
-
-                            window.opener.originTopologyData = result;
-                            window.opener.originTopologyMainIndex = idx;
-                            window.opener.initTopology(result, idx, true);
-                            window.opener.applyFilter(false);
-
-                            window.opener.$("#topology_div").css('display', 'block');
-                            window.opener.$("#help_div").css('display', 'none');
-                        },
-                        error: function () {
-                            console.log("viewTopology 에러");
-                            window.opener.initTopology(null, null, false);
-                        },
-                        complete: function () {
-                            window.opener.topologyLoading.hide();
-                            topologyLoadingAtRC.hide();
-                        }
-                    });
-                }
-            }
-        }
-    });
 
     detailsTable = table("#details_table", {
         event: {
@@ -71,10 +18,15 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
                     this.unselect();
 
                 if (row.data.type == "Class") {
-                    if (this.getExpand() != null && this.getExpand().index == row.index)
-                        this.hideExpand(row.index);
-                    else
-                        this.showExpand(row.index);
+                    if (!isViewTopology) {
+                        if (this.getExpand() != null && this.getExpand().index == row.index)
+                            this.hideExpand(row.index);
+                        else
+                            this.showExpand(row.index);
+                    } else {
+                        viewTopology(row.data.longName);
+                        isViewTopology = false;
+                    }
                 } else if (row.data.type == "Package") {
                     var treeIndex = packageTree.activeIndex();
                     var index = "";
@@ -104,21 +56,6 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
 
                     packageTree.select(node.index);
                 }
-            },
-            rowmenu: function (row, e) {
-                var icon;
-                if (row.data.type == "Package") {
-                    icon = "<i class='icon-document'></i> "
-                    $("#view_topology").css('display', 'none');
-                } else if (row.data.type == "Class") {
-                    icon = "<i class='icon-script'></i> "
-                    $("#view_topology").css('display', 'block');
-                }
-
-                this.select(row.index);
-                $("#selected_name").html(icon + row.data.longName);
-                dd.move(e.pageX - layoutRC.options.left.size, e.pageY + $("#center_div").scrollTop());
-                dd.show();
             }
         },
         expand: true,
@@ -128,18 +65,51 @@ jui.ready(["ui.dropdown", "grid.table"], function (dropdown, table) {
 
 });
 
-methodRightClick = function (className, content, signature, e) {
-    e.preventDefault();
+function viewTopologyClick() {
+    isViewTopology = true;
+}
 
-    var icon = "<i class='icon-message'></i> ";
-    var methodName = content.innerText;
-    var longName = className + "." + methodName;
+function viewTopology(key) {
+    window.opener.topologyLoading.show();
+    topologyLoadingAtRC.show();
 
-    $("#view_topology").css('display', 'block');
+    var name = key.replace("#", "*");
+    var type = "Class";
+    if (name.split('*').length > 1)
+        type = "Method";
+    var relation = window.opener.$("#relation_content").html().trim().split(' ')[0];
+    var detail = window.opener.$("#detail_content").html().trim().split(' ')[0];
+    var depth = isNaN(window.opener.depthSlider.getFromValue()) ? 1 : window.opener.depthSlider.getFromValue();
+    $.ajax({
+        url: "http://192.168.0.172:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
+        type: "GET",
+        success: function (result) {
+            console.log("viewTopology 성공");
+            console.log(result);
+            name = name.replace("*", "#");
+            var idx;
+            for (idx = 0; idx < result.length; idx++) {
+                if (result[idx].key == name)
+                    break;
+            }
 
-    $("#selected_name").html(icon + longName + "#" + signature);
-    dd.move(e.pageX - layoutRC.options.left.size, e.pageY + $("#center_div").scrollTop());
-    dd.show();
+            window.opener.originTopologyData = result;
+            window.opener.originTopologyMainIndex = idx;
+            window.opener.initTopology(result, idx, true);
+            window.opener.applyFilter(false);
+
+            window.opener.$("#topology_div").css('display', 'block');
+            window.opener.$("#help_div").css('display', 'none');
+        },
+        error: function () {
+            console.log("viewTopology 에러");
+            window.opener.initTopology(null, null, false);
+        },
+        complete: function () {
+            window.opener.topologyLoading.hide();
+            topologyLoadingAtRC.hide();
+        }
+    });
 }
 
 function toHome() {

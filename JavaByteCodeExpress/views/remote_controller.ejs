@@ -62,15 +62,6 @@
                 <tbody style="text-align: center;"></tbody>
             </table>
 
-            <!-- dropdown -->
-            <div id="details_table_dd" class="dropdown large">
-                <ul style="padding: 10px;">
-                    <span id="selected_name">null</span>
-                    <li class="divider"></li>
-                    <li id="view_topology">View Topology</li>
-                </ul>
-            </div>
-
         </div>
     </div>
 
@@ -90,9 +81,12 @@
         <! } else { !>
         <td><i class="icon-left"></i></td>
         <! if(!isLoaded) { !>
-        <td style="color: red;"><!= longName !></td>
+        <td style="color: red;"><!= longName !> <a class="btn small" title="Topology 보기"
+                                                   style="color: black; float: right; padding-top: 5px;"
+                                                   onclick="viewTopologyClick();"><i class="icon-topology"></i></a></td>
         <! } else { !>
-        <td><!= longName !></td>
+        <td><!= longName !> <a class="btn small" title="Topology 보기" style="float: right; padding-top: 5px;"
+                               onclick="viewTopologyClick();"><i class="icon-topology"></i></a></td>
         <! } !>
         <! } !>
     </tr>
@@ -171,7 +165,7 @@
 
             <! if(fields.length > 0) { !>
             <tr>
-                <td style="font-weight: bold">Fields</td>
+                <td style="font-weight: bold; text-align: center;">Fields</td>
                 <td>
 
                     <div>
@@ -179,7 +173,7 @@
                             <tbody>
                             <! for(var i = 0; i < fields.length; i++) { !>
                             <tr>
-                                <td rowspan="2"><!= fields[i].name !></td>
+                                <td rowspan="2" style="text-align: center;"><!= fields[i].name !></td>
                                 <td>Access Modifier</td>
                                 <td><!= fields[i].accessModifier !></td>
                             </tr>
@@ -198,7 +192,7 @@
 
             <! if(methods.length > 0) { !>
             <tr>
-                <td style="font-weight: bold">Methods</td>
+                <td style="font-weight: bold; text-align: center;">Methods</td>
                 <td>
 
                     <div>
@@ -209,9 +203,15 @@
                             <tr>
                                 <! var methodRowCount = 3 + methods[i].parameters.length +
                                 methods[i].calledMethods.length; !>
-                                <td rowspan="<!= methodRowCount !>"
-                                    oncontextmenu="methodRightClick('<!= longName !>', this, '<!= methods[i].signature !>', event); return false;">
-                                    <span style="font-weight: bold;"><!= methods[i].name !></span>
+                                <td rowspan="<!= methodRowCount !>" style="text-align: center;">
+                                    <span style="font-weight: bold;">
+                                        <!= methods[i].name !>
+                                        <! var methodName = longName + "." + methods[i].name + "#" + methods[i].signature; !>
+                                        <a class="btn small" title="Topology 보기"
+                                           style="float: right; padding-top: 5px; margin-right: 5px;"
+                                           onclick="viewTopology('<!= methodName !>')" ;><i
+                                                    class="icon-topology"></i></a>
+                                    </span>
                                 </td>
                                 <td>Access Modifier</td>
                                 <td>
