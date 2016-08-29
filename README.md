@@ -3,7 +3,7 @@
 Express Framework로 구현한 웹 프론트입니다.
 
 ## JavaByteCodeAnalysis
-Spring Framework로 구현한 RESTful API입니다.
+Spring Framework로 구현한 서버입니다.
 
 # 실행
 실행하기 전에 앞서, 하단 **주의사항**을 참고하여 주십시오.  
