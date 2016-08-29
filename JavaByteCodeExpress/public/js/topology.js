@@ -398,7 +398,7 @@ jui.ready(null, function () {
         if (name.split('*').length > 1)
             type = "Method";
         $.ajax({
-            url: "http://192.168.0.172:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
+            url: "http://localhost:8080/viewTopology?hash=" + hash + "&name=" + name + "&type=" + type + "&relation=" + relation + "&detail=" + detail + "&depth=" + depth,
             type: "GET",
             success: function (result) {
                 console.log("loadTopology 성공");
@@ -834,7 +834,7 @@ function saveFilter() {
         filters: JSON.stringify(filterList)
     };
     $.ajax({
-        url: "http://192.168.0.172:8080/saveFilter",
+        url: "http://localhost:8080/saveFilter",
         dataType: 'json',
         data: data,
         type: "POST",

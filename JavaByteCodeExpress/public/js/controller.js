@@ -3,7 +3,7 @@ $(document).ready(function () {
     hash = $("#hiddenHash").val();
 
     $.ajax({
-        url: "http://192.168.0.172:8080/index?hash=" + hash,
+        url: "http://localhost:8080/index?hash=" + hash,
         processData: false,
         contentType: false,
         data: {"hash": hash},
@@ -36,7 +36,7 @@ $(document).ready(function () {
             $intro[0].innerHTML = introText;
 
             $.ajax({
-                url: "http://192.168.0.172:8080/loadFilter?hash=" + hash,
+                url: "http://localhost:8080/loadFilter?hash=" + hash,
                 type: "GET",
                 success: function (result) {
                     filterList = result;
@@ -62,7 +62,7 @@ $(document).ready(function () {
         loadingModal.show();
 
         $.ajax({
-            url: "http://192.168.0.172:8080/fileUpload",
+            url: "http://localhost:8080/fileUpload",
             contentType: false,
             processData: false,
             data: formData,
@@ -91,7 +91,7 @@ $(document).ready(function () {
 
     $("#clearButton").click(function () {
         $.ajax({
-            url: "http://192.168.0.172:8080/clear?hash=" + hash,
+            url: "http://localhost:8080/clear?hash=" + hash,
             type: "GET",
             success: function () {
                 location.href = '/';

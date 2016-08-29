@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://192.168.0.172:3000")
+@CrossOrigin(origins = "http://localhost:3000")
 public class IndexController {
     private static final Logger log = Logger.getLogger(IndexController.class);
 

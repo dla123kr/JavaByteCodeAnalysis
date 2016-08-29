@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "http://192.168.0.172:3000")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ClearController {
 
     private static final Logger log = Logger.getLogger(ClearController.class);
