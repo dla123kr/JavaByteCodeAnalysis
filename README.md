@@ -16,6 +16,7 @@ Spring Framework로 구현한 RESTful API입니다.
 
 # 주의사항
 * 해당 프로젝트들은 모두 **IntelliJ IDEA**로 제작되었습니다.  
+* 로컬이 아닌 환경에서 사용하실 경우, 두 프로젝트에서 http://localhost를 http://IP로 변경해주세요. 단, Port는 그대로 남겨두세요. ( ex. http://192.168.0.123 )
 
 ***
 
