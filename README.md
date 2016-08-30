@@ -14,7 +14,8 @@ Express Framework로 구현한 Front-end이다.
 
 1. JavaByteCodeExpress를 실행한다.
 2. JavaByteCodeAnalysis를 실행한다.
-3. http://localhost:3000 (혹은 서버 IP, 이를 사용하기 위해선 [**주의사항**](https://github.com/dla123kr/JavaByteCodeAnalysis/blob/master/README.md#4-주의사항)을 참고하십시오.)에 접속한다.
+3. http://localhost:3000 에 접속한다.
+(혹은 http://서버 IP:3000, 이를 사용하기 위해선 **주의사항**을 참고하십시오.)
 4. 분석할 *.jar 혹은 *.class를 첨부한다.
 5. Load
 
