@@ -10,6 +10,10 @@ public class ClearController {
 
     private static final Logger log = Logger.getLogger(ClearController.class);
 
+    /**
+     * hash에 해당하는 사용자의 데이터 제거
+     * @param hash
+     */
     @RequestMapping(path = "/clear", method = RequestMethod.GET)
     public void clear(@RequestParam("hash") String hash) {
         HandleJBC.getAllNodesSet().remove(hash);

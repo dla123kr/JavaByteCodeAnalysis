@@ -17,10 +17,12 @@ public class ViewTopologyController {
     private static final Logger log = Logger.getLogger(ViewTopologyController.class);
 
     /**
+     * 해당되는 조건을 만족하는 Topology를 만들어 JSON형태로 반환
+     *
      * @param hash  해쉬값
      * @param name  토폴로지의 중심
      * @param depth 깊이
-     * @return
+     * @return Topology들의 정보가 담긴 JSON
      */
     @RequestMapping(path = "/viewTopology", method = RequestMethod.GET)
     public ArrayList<TopologyNode> viewTopology(@RequestParam("hash") String hash, @RequestParam("name") String name, @RequestParam("type") String type,
@@ -106,6 +108,8 @@ public class ViewTopologyController {
     }
 
     /**
+     * Ingoing이며 Classes or Packages가 중심으로 가는 Topology들을 만듬
+     *
      * @param topologyNodeHashtable 전체 Topology 정보를 담고 있는 해쉬테이블
      * @param nodes                 탐색할 Children
      * @param name                  중심의 이름
@@ -152,6 +156,14 @@ public class ViewTopologyController {
         }
     }
 
+    /**
+     * Ingoing이며 Methods가 중심으로 가는 Topology들을 만듬
+     *
+     * @param topologyNodeHashtable 전체 Topology 정보를 담고 있는 해쉬테이블
+     * @param nodes                 탐색할 Children
+     * @param name                  중심의 이름
+     * @param mainType              중심의 타입 (main_method or main_class)
+     */
     private void connectIngoingEdgeFromMethodsToCenter(Hashtable<String, TopologyNode> topologyNodeHashtable, ArrayList<Node> nodes, String name, String mainType) {
         for (Node node : nodes) {
             if (node.getType().equals("Package") || node.getType().equals("Class")) {
@@ -184,6 +196,14 @@ public class ViewTopologyController {
         }
     }
 
+    /**
+     * 직계인지 아닌지 확인한다. 직계인데 새로운 TopologyNode가 만들어지면 안되기 때문
+     *
+     * @param name
+     * @param jbcMethod
+     * @param mainType
+     * @return 직계이면 true
+     */
     private boolean checkParentRelation(String name, JBCMethod jbcMethod, String mainType) {
         if (mainType.equals("main_class")) {
             String methodLongName = jbcMethod.getLongName();
@@ -204,6 +224,8 @@ public class ViewTopologyController {
     }
 
     /**
+     * Outgoing이며 NotMethod에서 NotMethods로 가는 Topology들을 만듬
+     *
      * @param topologyNodeHashtable
      * @param mainNode
      * @param rootTopologyNode
@@ -233,6 +255,20 @@ public class ViewTopologyController {
         }
     }
 
+    /**
+     * Outgoing이며 Method에서 NotMethods로 가는 Topology들을 만듬
+     *
+     * @param topologyNodeHashtable
+     * @param jbcMethod
+     * @param rootTopologyNode
+     * @param rootType              루트의 타입 (amin_class 혹은 main_method)
+     * @param startTopologyNode
+     * @param startType             시작점의 타입 (method)
+     * @param detailType            리프의 타입 (NodeType.PACKAGE 혹은 NodeType.CLASS)
+     * @param hash
+     * @param curDepth
+     * @param endDepth
+     */
     private void connectOutgoingEdgeFromMethodToNotMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, JBCMethod jbcMethod, TopologyNode rootTopologyNode, String rootType, TopologyNode startTopologyNode, String startType, int detailType, String hash, int curDepth, int endDepth) {
         if (curDepth == endDepth)
             return;
@@ -299,7 +335,6 @@ public class ViewTopologyController {
                 calledTN.setCalledCount(1);
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
 
-                // TODO: 2016-08-09 추가 depth 진행
                 connectOutgoingEdgeFromNotMethodToNotMethods(topologyNodeHashtable, findedNode, rootTopologyNode, rootType, calledTN, type, detailType, hash, curDepth + 1, endDepth);
             }
             startTopologyNode.getOutgoing().add(chkStartKey);
@@ -307,6 +342,16 @@ public class ViewTopologyController {
         }
     }
 
+    /**
+     * Outgoing이며 Class에서 Methods로 가는 Topology들을 만듬
+     *
+     * @param topologyNodeHashtable
+     * @param mainNode
+     * @param startTopologyNode
+     * @param hash
+     * @param curDepth
+     * @param endDepth
+     */
     private void connectOutgoingEdgeFromClassToMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, Node mainNode, TopologyNode startTopologyNode, String hash, int curDepth, int endDepth) {
         for (Node node : mainNode.getChildren()) {
             if (node.getType().equals("Method")) {
@@ -316,6 +361,18 @@ public class ViewTopologyController {
         }
     }
 
+    /**
+     * Outgoing이며 Method에서 Methods로 가는 Topology들을 만듬
+     * @param topologyNodeHashtable
+     * @param jbcMethod
+     * @param rootTopologyNode
+     * @param rootType
+     * @param startTopologyNode
+     * @param startType
+     * @param hash
+     * @param curDepth
+     * @param endDepth
+     */
     private void connectOutgoingEdgeFromMethodToMethods(Hashtable<String, TopologyNode> topologyNodeHashtable, JBCMethod jbcMethod, TopologyNode rootTopologyNode, String rootType, TopologyNode startTopologyNode, String startType, String hash, int curDepth, int endDepth) {
         if (curDepth == endDepth)
             return;
@@ -347,8 +404,6 @@ public class ViewTopologyController {
                 if (calledTN.getDepth() < curDepth + 1)
                     calledTN.setDepth(curDepth + 1);
                 calledTN.increaseCalledCount();
-
-                // TODO: 2016-08-08 이미 있을 땐 어떡하지 ?
             } else {
                 AbstractMap.SimpleEntry<Node, Node> parentAndChild = null;
                 for (Node _node : HandleJBC.getAllNodesSet().get(hash)) {
@@ -364,7 +419,6 @@ public class ViewTopologyController {
                 calledTN.setCalledCount(1);
                 topologyNodeHashtable.put(calledTN.getKey(), calledTN);
 
-                // TODO: 2016-08-08 추가 depth 진행?????
                 connectOutgoingEdgeFromMethodToMethods(topologyNodeHashtable, findedJBCMethod, rootTopologyNode, rootType, calledTN, "method", hash, curDepth + 1, endDepth);
             }
             startTopologyNode.getOutgoing().add(calledMethodKey);
@@ -372,6 +426,14 @@ public class ViewTopologyController {
         }
     }
 
+    /**
+     * 원본 접근제어자를 이용하여 icon에 사용할 접근제어자만 빼낸다.
+     *
+     * @param modifier  원본 접근제어자
+     * @param jbcMethod 원본 함수
+     * @param mainNode  상속을 확인하기 위한 중심 노드
+     * @return 접근제어자 중 icon에 쓸 접근제어자 반환
+     */
     private String filterAccessModifier(String modifier, JBCMethod jbcMethod, JBCClass mainNode) {
         String ret = null;
         if (modifier == null && mainNode != null) {
@@ -406,6 +468,11 @@ public class ViewTopologyController {
         return ret;
     }
 
+    /**
+     * 중복된 Outgoing을 제거
+     *
+     * @param tn Outgoing의 중복을 제거할 TopologyNode
+     */
     private void deleteOutgoingDuplication(TopologyNode tn) {
         HashSet hs = new HashSet(tn.getOutgoing());
         tn.setOutgoing(new ArrayList<>(hs));

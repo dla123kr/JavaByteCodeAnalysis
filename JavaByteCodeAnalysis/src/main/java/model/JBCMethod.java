@@ -59,6 +59,11 @@ public class JBCMethod extends Node {
         return parameters;
     }
 
+    /**
+     * Description을 잘라내며 파라미터들을 분리한다.
+     *
+     * @param desc 잘라낼 Description
+     */
     public void setParameters(String desc) {
         this.signature = desc;
         parameters.clear();
@@ -86,6 +91,12 @@ public class JBCMethod extends Node {
         }
     }
 
+    /**
+     * 큰 덩어리를 잘게 잘라 진짜 파라미터들로 분리한다
+     *
+     * @param tokenMass 잘린 큰 덩어리
+     * @return 파라미터들의 이름 배열
+     */
     private ArrayList<String> splitTokenMass(String tokenMass) {
         ArrayList<String> tokens = new ArrayList<>();
 
@@ -111,6 +122,11 @@ public class JBCMethod extends Node {
         return tokens;
     }
 
+    /**
+     * 함수를 실행시켜보며 그 함수가 부르는 함수들의 이름과 시그니쳐를 얻는다.
+     *
+     * @param ct 실행시킬 함수
+     */
     public void setCalledMethods(CtBehavior ct) {
         calledMethods.clear();
         ArrayList<CalledMethod> methods = new ArrayList<>();

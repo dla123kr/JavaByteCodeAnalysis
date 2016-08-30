@@ -189,6 +189,13 @@ public class Node {
         this.returnType = descToReturnType(desc, isMethod);
     }
 
+    /**
+     * Description을 해석해서 returnType을 알아낸다.
+     *
+     * @param desc     해석할 Description
+     * @param isMethod 함수인가?
+     * @return return Type
+     */
     public String descToReturnType(String desc, boolean isMethod) {
         String returnType = null;
         int arrDimension = 0;

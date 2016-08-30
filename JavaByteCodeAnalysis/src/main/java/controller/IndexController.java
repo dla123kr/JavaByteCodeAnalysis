@@ -38,6 +38,12 @@ public class IndexController {
         return HandleJBC.getAllNodesSet().get(hash);
     }
 
+    /**
+     * hash값에 해당하는 사용자의 저장된 필터를 불러옴
+     *
+     * @param hash
+     * @return
+     */
     @RequestMapping(path = "/loadFilter", method = RequestMethod.GET)
     public ArrayList<Filter> loadFilter(@RequestParam("hash") String hash) {
         if (HandleJBC.getAllFiltersSet().containsKey(hash))
@@ -46,6 +52,13 @@ public class IndexController {
             return new ArrayList<>();
     }
 
+    /**
+     * hash값에 해당하는 사용자의 필터를 저장함
+     *
+     * @param hash
+     * @param filterJSON
+     * @return
+     */
     @RequestMapping(path = "/saveFilter", method = RequestMethod.POST)
     public String saveFilter(@RequestParam("hash") String hash, @RequestParam("filters") String filterJSON) {
         ObjectMapper mapper = new ObjectMapper();

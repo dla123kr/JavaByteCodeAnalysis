@@ -23,8 +23,16 @@ public class HandleJBC {
     public static Hashtable<String, ArrayList<Node>> getAllNodesSet() {
         return allNodesSet;
     }
-    public static Hashtable<String, ArrayList<Filter>> getAllFiltersSet() { return allFiltersSet; }
 
+    public static Hashtable<String, ArrayList<Filter>> getAllFiltersSet() {
+        return allFiltersSet;
+    }
+
+    /**
+     * ClassFile을 분석하여 필요한 형태(JBCClass, JBCField, JBCMethod)로 가공한다.
+     *
+     * @param classFile 가공할 Class File
+     */
     public void addNode(ClassFile classFile) {
         ClassPool classPool = ClassPool.getDefault();
 
@@ -65,10 +73,13 @@ public class HandleJBC {
         }
     }
 
-    // 새로만들면 부모 잘 처리하자
-    // 기존에 있는 클래스 + 있는 함수면 calledCount++
-    // 기존에 있는 클래스 + 없는 함수면 SuperClass의 것. 1로 초기화해주고 추가
-    // 기존에 없는 클래스면 추가 !
+    /**
+     * 해당 함수를 찾으며 calledCount를 올린다.
+     *
+     * @param indexes      함수의 full name (점점 잘려나감)
+     * @param parent       자식을 탐색할 부모
+     * @param calledMethod 찾을 함수
+     */
     private void recursiveFindMethod(String indexes, Node parent, CalledMethod calledMethod) {
         String[] splitted = indexes.split("\\.");
 
@@ -80,7 +91,7 @@ public class HandleJBC {
             for (int i = 0; i < parent.getChildren().size(); i++) {
                 if (name.equals(parent.getChildren().get(i).getName()) && parent.getChildren().get(i).getType().equals("Method")) {
                     jbcMethod = (JBCMethod) parent.getChildren().get(i);
-                    if(jbcMethod.getSignature().equals(calledMethod.getSignature())){
+                    if (jbcMethod.getSignature().equals(calledMethod.getSignature())) {
                         jbcMethod.setCalledCount(jbcMethod.getCalledCount() + 1);
                         return;
                     }
@@ -136,6 +147,9 @@ public class HandleJBC {
         }
     }
 
+    /**
+     * 함수 calledCount를 센다.
+     */
     public void countingMethodCall() {
         for (CalledMethod calledMethod : tmpCalledMethods) {
             String str = calledMethod.getName();

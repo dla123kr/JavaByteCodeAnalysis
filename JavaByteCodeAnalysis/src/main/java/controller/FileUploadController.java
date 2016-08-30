@@ -18,6 +18,13 @@ public class FileUploadController {
 
     private static Logger log = Logger.getLogger(FileUploadController.class);
 
+    /**
+     * 업로드된 파일을 가공하여 저장
+     *
+     * @param files 업로드된 파일들
+     * @param hash  사용자 고유의 해쉬값
+     * @return 가공된 패키지들의 JSON
+     */
     @RequestMapping(path = "/fileUpload", method = RequestMethod.POST)
     public ArrayList<Node> fileUpload(@RequestParam("uploadFile") MultipartFile[] files, @RequestParam("hiddenHash") String hash) {
         HandleJBC handleJBC = new HandleJBC();
