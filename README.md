@@ -1,7 +1,5 @@
 # 자바바이트코드 분석기
 
-[[TOC]]
-
 ## 1. 구성
 이 프로젝트는 Back-end인 JavaByteCodeAnalysis와 Front-end인 JavaByteCodeExpress로 이루어져 있다.
 
@@ -20,7 +18,15 @@ Express Framework로 구현한 Front-end이다.
 4. 분석할 *.jar 혹은 *.class를 첨부한다.
 5. Load
 
-## 3. 기능
+## 3. 창
+자바바이트코드 분석기는 2개의 창으로 이루어져 있다. main화면과 리모콘이다.
+
+### 3.1. main화면
+main화면에서는 분석할 파일(*.jar, *.class)을 업로드 할 수 있고, Topology를 볼 수 있다.
+
+### 3.2. 리모콘
+리모콘은 업로드한 파일을 Package들을 Directory형식으로 정리해서 보여주는 Package Tree와 Class의 자세한 정보를 보여주는 Details Table로 구성되어 있다.  
+Details Table에서 Class의 자세한 정보를 볼 수 있고, Topology 버튼을 클릭하게 되면 해당 Class 혹은 Method의 Topology를 볼 수 있다.
 
 ## 4. 주의사항
 프로젝트를 실행하기에 앞서 숙지 및 참고하십시오.
